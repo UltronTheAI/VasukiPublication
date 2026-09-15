@@ -52,3 +52,102 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* =========================================================================
+   VASUKISQUARE BOOK RENDERING ISOLATION BOUNDARY
+   All book styles are strictly scoped under .vasuki-book-root
+   ========================================================================= */
+
+.vasuki-book-root {
+  --vsk-primary: #00ed64;
+  --vsk-primary-deep: #00b545;
+  --vsk-teal-deep: #001e2b;
+  --vsk-teal-mid: #00684a;
+  
+  --vsk-font-body: 'Plus Jakarta Sans', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --vsk-font-mono: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', ui-monospace, monospace;
+}
+
+/* Base A4 page container: exact 210mm / 297mm (1:1.414) aspect ratio */
+.vasuki-book-root .vasuki-page-canvas {
+  aspect-ratio: 210 / 297;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: var(--vsk-font-body);
+}
+
+/* Theme Variations */
+.vasuki-book-root .vasuki-theme-light {
+  background-color: #ffffff;
+  color: #001e2b;
+  --vsk-bg-surface: #f9fbfa;
+  --vsk-bg-soft: #f4f7f6;
+  --vsk-border: #e1e5e8;
+  --vsk-border-subtle: #edf1f3;
+  --vsk-text-main: #001e2b;
+  --vsk-text-muted: #5c6c7a;
+  --vsk-text-subtle: #8a99a6;
+  --vsk-code-bg: #001e2b;
+  --vsk-code-text: #00ed64;
+}
+
+.vasuki-book-root .vasuki-theme-dark {
+  background-color: #001e2b;
+  color: #f1f5f9;
+  --vsk-bg-surface: #072a3b;
+  --vsk-bg-soft: #0c364b;
+  --vsk-border: #183e52;
+  --vsk-border-subtle: #123040;
+  --vsk-text-main: #f8fafc;
+  --vsk-text-muted: #94a3b8;
+  --vsk-text-subtle: #64748b;
+  --vsk-code-bg: #04141d;
+  --vsk-code-text: #00ed64;
+}
+
+.vasuki-book-root .vasuki-theme-sepia {
+  background-color: #fbf0d9;
+  color: #2d2417;
+  --vsk-bg-surface: #f4e5c4;
+  --vsk-bg-soft: #ede0bc;
+  --vsk-border: #e3d2aa;
+  --vsk-border-subtle: #ede1c0;
+  --vsk-text-main: #2d2417;
+  --vsk-text-muted: #72624d;
+  --vsk-text-subtle: #9c8a74;
+  --vsk-code-bg: #271f14;
+  --vsk-code-text: #00ed64;
+}
+
+/* Typography elements within book root */
+.vasuki-book-root code,
+.vasuki-book-root pre,
+.vasuki-book-root .font-mono {
+  font-family: var(--vsk-font-mono) !important;
+}
+
+/* Restrained Page Flip Animation */
+@media (prefers-reduced-motion: no-preference) {
+  .vasuki-flip-enter {
+    opacity: 0;
+    transform: translateX(12px) scale(0.99);
+  }
+  .vasuki-flip-enter-active {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    transition: opacity 220ms ease-out, transform 220ms ease-out;
+  }
+  .vasuki-flip-back-enter {
+    opacity: 0;
+    transform: translateX(-12px) scale(0.99);
+  }
+  .vasuki-flip-back-enter-active {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    transition: opacity 220ms ease-out, transform 220ms ease-out;
+  }
+}
+
