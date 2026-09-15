@@ -60,3 +60,34 @@ export async function getCoversForBooks(bookIds: string[]): Promise<Record<strin
   return map;
 }
 
+/**
+ * Update safe cover metadata and design parameters for admin editor.
+ */
+export async function updateCoverAdmin(
+  coverIdOrBookId: string,
+  coverData: Partial<Cover>
+): Promise<Cover | null> {
+  if (!coverIdOrBookId) return null;
+
+  const collection = await getCoversCollection();
+  const safeUpdate = { ...coverData, updated_at: new Date() };
+  delete (safeUpdate as Record<string, unknown>)._id;
+  delete (safeUpdate as Record<string, unknown>).id;
+
+  const result = await collection.findOneAndUpdate(
+    {
+      $or: [
+        { id: coverIdOrBookId },
+        { book_id: coverIdOrBookId },
+        { _id: coverIdOrBookId as unknown as undefined },
+      ],
+    },
+    { $set: safeUpdate },
+    { returnDocument: "after" }
+  );
+
+  if (!result) return null;
+  return normalizeCoverDoc(result as unknown as Record<string, unknown>);
+}
+
+

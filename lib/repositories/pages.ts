@@ -94,3 +94,43 @@ export async function getLinkedPages(
   return chain;
 }
 
+/**
+ * Retrieve all pages for a book ordered by page number for the admin viewer.
+ */
+export async function getPagesForBookAdmin(bookId: string): Promise<Page[]> {
+  if (!bookId) return [];
+
+  const collection = await getPagesCollection();
+  const docs = await collection
+    .find({ book_id: bookId })
+    .sort({ page_number: 1 })
+    .toArray();
+
+  return docs.map((d) => normalizePageDoc(d as unknown as Record<string, unknown>));
+}
+
+/**
+ * Update page metadata or structured content in the repository.
+ */
+export async function updatePageAdmin(
+  pageId: string,
+  updateData: Partial<Page>
+): Promise<Page | null> {
+  if (!pageId) return null;
+
+  const collection = await getPagesCollection();
+  const safeUpdate = { ...updateData, updated_at: new Date() };
+  delete (safeUpdate as Record<string, unknown>)._id;
+  delete (safeUpdate as Record<string, unknown>).id;
+
+  const result = await collection.findOneAndUpdate(
+    { $or: [{ id: pageId }, { _id: pageId as unknown as undefined }] },
+    { $set: safeUpdate },
+    { returnDocument: "after" }
+  );
+
+  if (!result) return null;
+  return normalizePageDoc(result as unknown as Record<string, unknown>);
+}
+
+

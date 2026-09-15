@@ -111,3 +111,20 @@ const publicFilter = {
 };
 ```
 
+---
+
+## 4. Admin Operations & Cascade Invariants
+
+### 4.1 Safe Cascade Deletion
+When a publication is deleted in the admin console:
+1. Target `books` document matching `id` is deleted.
+2. All linked `pages` matching `book_id === id` are deleted.
+3. Linked `covers` matching `book_id === id` are deleted.
+4. **Invariant**: `ads` documents are **never** touched by publication deletion.
+
+### 4.2 Hero Pin Ranking Rules
+- Maximum 5 publications may have `featured.pinned === true`.
+- Positions are strictly integers in the range `1..5`.
+- Conflicting positions are automatically shifted or normalized.
+- Only published, public books can be returned in the public hero section.
+

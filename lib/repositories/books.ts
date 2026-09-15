@@ -234,4 +234,230 @@ export async function getPublicBooksBySlugs(slugs: string[]): Promise<Book[]> {
   return docs.map((d) => normalizeBookDoc(d as unknown as Record<string, unknown>));
 }
 
+export interface AdminBookQueryOptions {
+  search?: string;
+  status?: string;
+  visibility?: string;
+  page?: number;
+  limit?: number;
+}
+
+/**
+ * Administrative paginated book retrieval with filters for status, visibility, and search.
+ * Returns both public and private/draft publications.
+ */
+export async function getAllBooksAdmin(
+  options: AdminBookQueryOptions = {}
+): Promise<PaginatedResult<Book>> {
+  const page = Math.max(1, options.page || 1);
+  const limit = Math.min(Math.max(1, options.limit || DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
+  const skip = (page - 1) * limit;
+
+  const filter: Record<string, unknown> = {};
+
+  if (options.status && options.status !== "all") {
+    filter["publication.status"] = options.status;
+  }
+
+  if (options.visibility && options.visibility !== "all") {
+    filter["publication.visibility"] = options.visibility;
+  }
+
+  if (options.search?.trim()) {
+    const escaped = options.search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = { $regex: escaped, $options: "i" };
+    filter.$or = [
+      { title: regex },
+      { subtitle: regex },
+      { slug: regex },
+      { author: regex },
+      { category: regex },
+    ];
+  }
+
+  const collection = await getBooksCollection();
+  const [total, docs] = await Promise.all([
+    collection.countDocuments(filter),
+    collection
+      .find(filter)
+      .sort({ updated_at: -1, created_at: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray(),
+  ]);
+
+  const totalPages = total > 0 ? Math.ceil(total / limit) : 1;
+
+  return {
+    items: docs.map((d) => normalizeBookDoc(d as unknown as Record<string, unknown>)),
+    page,
+    limit,
+    total,
+    total_pages: totalPages,
+    has_next: page < totalPages,
+    has_previous: page > 1,
+  };
+}
+
+export interface AdminOverviewStats {
+  totalBooks: number;
+  publishedBooks: number;
+  draftBooks: number;
+  privateBooks: number;
+  pinnedBooksCount: number;
+  activeAdsCount: number;
+}
+
+/**
+ * Retrieve high-level operational metrics for the administrative overview dashboard.
+ */
+export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
+  const collection = await getBooksCollection();
+
+  const [total, published, drafts, privates, pinnedDocs] = await Promise.all([
+    collection.countDocuments({}),
+    collection.countDocuments({ "publication.status": "published", "publication.visibility": "public" }),
+    collection.countDocuments({ "publication.status": "draft" }),
+    collection.countDocuments({ "publication.visibility": "private" }),
+    collection.countDocuments({ "featured.pinned": true }),
+  ]);
+
+  return {
+    totalBooks: total,
+    publishedBooks: published,
+    draftBooks: drafts,
+    privateBooks: privates,
+    pinnedBooksCount: pinnedDocs,
+    activeAdsCount: 0, // Augmented by caller from ads collection
+  };
+}
+
+/**
+ * Update book metadata, publication status, SEO, and categorization.
+ */
+export async function updateBook(
+  bookId: string,
+  updateData: Partial<Book>
+): Promise<Book | null> {
+  if (!bookId) return null;
+
+  const collection = await getBooksCollection();
+  const safeUpdate = { ...updateData, updated_at: new Date() };
+  delete (safeUpdate as Record<string, unknown>)._id;
+  delete (safeUpdate as Record<string, unknown>).id;
+
+  const result = await collection.findOneAndUpdate(
+    { $or: [{ id: bookId }, { _id: bookId as unknown as undefined }] },
+    { $set: safeUpdate },
+    { returnDocument: "after" }
+  );
+
+  if (!result) return null;
+  return normalizeBookDoc(result as unknown as Record<string, unknown>);
+}
+
+/**
+ * Server-enforced pinning update with strict max 5 constraint and duplicate position resolution.
+ */
+export async function updateBookPin(
+  bookId: string,
+  pinned: boolean,
+  position?: number | null
+): Promise<{ success: boolean; error?: string }> {
+  if (!bookId) return { success: false, error: "Missing book ID" };
+
+  const collection = await getBooksCollection();
+
+  if (!pinned) {
+    await collection.updateOne(
+      { $or: [{ id: bookId }, { _id: bookId as unknown as undefined }] },
+      { $set: { "featured.pinned": false, "featured.position": null, updated_at: new Date() } }
+    );
+    return { success: true };
+  }
+
+  // Enforce position 1..5
+  const targetPos = position && position >= 1 && position <= 5 ? Math.round(position) : 1;
+
+  // Retrieve currently pinned books
+  const currentPinned = await collection
+    .find({ "featured.pinned": true })
+    .sort({ "featured.position": 1 })
+    .toArray();
+
+  const isAlreadyPinned = currentPinned.some((d) => d.id === bookId || d._id?.toString() === bookId);
+
+  if (!isAlreadyPinned && currentPinned.length >= 5) {
+    return { success: false, error: "Maximum of 5 pinned publications reached. Unpin another book first." };
+  }
+
+  // If another book occupies this target position, shift or reassign positions
+  for (const doc of currentPinned) {
+    const docId = doc.id || doc._id?.toString();
+    if (docId !== bookId && doc.featured?.position === targetPos) {
+      // Find lowest available position 1..5
+      const usedPositions = new Set(currentPinned.filter(d => (d.id || d._id?.toString()) !== docId).map(d => d.featured?.position));
+      let nextAvail = 1;
+      while (usedPositions.has(nextAvail) && nextAvail <= 5) {
+        nextAvail++;
+      }
+      if (nextAvail <= 5) {
+        await collection.updateOne(
+          { _id: doc._id },
+          { $set: { "featured.position": nextAvail, updated_at: new Date() } }
+        );
+      }
+    }
+  }
+
+  await collection.updateOne(
+    { $or: [{ id: bookId }, { _id: bookId as unknown as undefined }] },
+    { $set: { "featured.pinned": true, "featured.position": targetPos, updated_at: new Date() } }
+  );
+
+  return { success: true };
+}
+
+/**
+ * Destructive safe cascade deletion: removes book, its pages, and cover artwork.
+ * Strictly preserves unrelated advertisements.
+ */
+export async function deleteBookCascade(
+  bookId: string
+): Promise<{ success: boolean; deletedPagesCount: number; deletedCover: boolean }> {
+  if (!bookId) return { success: false, deletedPagesCount: 0, deletedCover: false };
+
+  const booksColl = await getBooksCollection();
+  const { getPagesCollection, getCoversCollection } = await import("@/lib/db/collections");
+  const pagesColl = await getPagesCollection();
+  const coversColl = await getCoversCollection();
+
+  // Find book first to get both id and slug
+  const bookDoc = await booksColl.findOne({
+    $or: [{ id: bookId }, { _id: bookId as unknown as undefined }],
+  });
+
+  if (!bookDoc) {
+    return { success: false, deletedPagesCount: 0, deletedCover: false };
+  }
+
+  const normalizedId = bookDoc.id || bookDoc._id?.toString() || bookId;
+
+  // 1. Delete Pages
+  const pagesRes = await pagesColl.deleteMany({ book_id: normalizedId });
+
+  // 2. Delete Cover
+  const coverRes = await coversColl.deleteMany({ book_id: normalizedId });
+
+  // 3. Delete Book
+  await booksColl.deleteOne({ _id: bookDoc._id });
+
+  return {
+    success: true,
+    deletedPagesCount: pagesRes.deletedCount || 0,
+    deletedCover: (coverRes.deletedCount || 0) > 0,
+  };
+}
+
+
 

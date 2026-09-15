@@ -26,6 +26,8 @@ export function isSafeUrl(urlString: string | null | undefined): boolean {
   }
 }
 
+export const isValidHttpUrl = isSafeUrl;
+
 /**
  * Safely extracts the domain hostname from a URL string (e.g. "github.com").
  * Returns an empty string if the URL is invalid or malformed.

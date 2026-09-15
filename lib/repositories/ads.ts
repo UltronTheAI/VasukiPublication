@@ -86,3 +86,96 @@ export function selectWeightedAd(ads: Ad[], atTime?: Date): Ad | null {
   return eligible[0];
 }
 
+/**
+ * Retrieve all advertisements for the admin management view.
+ */
+export async function getAllAdsAdmin(): Promise<Ad[]> {
+  const collection = await getAdsCollection();
+  const docs = await collection.find({}).sort({ priority: 1, created_at: -1 }).toArray();
+  return docs.map((d) => normalizeAdDoc(d as unknown as Record<string, unknown>));
+}
+
+/**
+ * Create a new native advertisement document with initial zeroed stats.
+ */
+export async function createAdAdmin(
+  adData: {
+    title: string;
+    headline: string;
+    description: string;
+    sponsor: string;
+    url: string;
+    placements: string[];
+    priority: number;
+    active: boolean;
+    starts_at?: string | Date | null;
+    ends_at?: string | Date | null;
+  }
+): Promise<Ad> {
+  const collection = await getAdsCollection();
+  const now = new Date();
+  const id = `ad-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
+  const newDoc = {
+    id,
+    title: adData.title.trim(),
+    headline: adData.headline.trim(),
+    description: adData.description.trim(),
+    sponsor: adData.sponsor.trim(),
+    url: adData.url.trim(),
+    placements: adData.placements || ["home_banner"],
+    priority: adData.priority || 1,
+    active: Boolean(adData.active),
+    starts_at: adData.starts_at ? new Date(adData.starts_at) : null,
+    ends_at: adData.ends_at ? new Date(adData.ends_at) : null,
+    stats: { impressions: 0, clicks: 0 },
+    created_at: now,
+    updated_at: now,
+  };
+
+  await collection.insertOne(newDoc as unknown as import("@/lib/db/types").AdDocument);
+  return normalizeAdDoc(newDoc as unknown as Record<string, unknown>);
+}
+
+/**
+ * Update an advertisement document.
+ */
+export async function updateAdAdmin(
+  adId: string,
+  adData: Partial<Ad>
+): Promise<Ad | null> {
+  if (!adId) return null;
+
+  const collection = await getAdsCollection();
+  const safeUpdate = { ...adData, updated_at: new Date() };
+  delete (safeUpdate as Record<string, unknown>)._id;
+  delete (safeUpdate as Record<string, unknown>).id;
+
+  if (safeUpdate.starts_at) safeUpdate.starts_at = new Date(safeUpdate.starts_at);
+  if (safeUpdate.ends_at) safeUpdate.ends_at = new Date(safeUpdate.ends_at);
+
+  const result = await collection.findOneAndUpdate(
+    { $or: [{ id: adId }, { _id: adId as unknown as undefined }] },
+    { $set: safeUpdate },
+    { returnDocument: "after" }
+  );
+
+  if (!result) return null;
+  return normalizeAdDoc(result as unknown as Record<string, unknown>);
+}
+
+/**
+ * Delete an advertisement document.
+ */
+export async function deleteAdAdmin(adId: string): Promise<boolean> {
+  if (!adId) return false;
+
+  const collection = await getAdsCollection();
+  const res = await collection.deleteOne({
+    $or: [{ id: adId }, { _id: adId as unknown as undefined }],
+  });
+
+  return (res.deletedCount || 0) > 0;
+}
+
+

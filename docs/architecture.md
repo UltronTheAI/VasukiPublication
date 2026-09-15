@@ -68,6 +68,8 @@ VasukiPublication is the public web presentation and reader application for book
 
 ---
 
+---
+
 ## 4. Route Hierarchy
 
 - `/` — Homepage: Hero, Featured Showcase (pinned 1..5), Recent Publications, Category Browse, Native Banner Ads.
@@ -75,6 +77,11 @@ VasukiPublication is the public web presentation and reader application for book
 - `/book/[slug]/opengraph-image` — Dynamic 1200x630 social preview generation using `ImageResponse`.
 - `/book/[slug]/read` — Interactive Reader: Isolated A4 page viewer, linked-list page progression, zero ads.
 - `/saved` — Saved Books: Local bookmarks and offline reading queue (anonymous, browser-local).
+- `/admin` — Private Admin Overview: Dashboard statistics, publication counts, pinned rankings, ad summary.
+- `/admin/login` — Single-Administrator Login: Token entry with brute-force rate limiting.
+- `/admin/books` — Publications Directory: Search, status/visibility filters, quick hero pinning, pagination.
+- `/admin/books/[id]` — Publication Editor: Metadata, SEO, hero pin ranking, page inspection, live cover editor, and safe cascade deletion.
+- `/admin/ads` — Native Ads Manager: Campaign CRUD, placement controls, CTR analytics, live native component preview.
 - `/api/books/batch` — Batch resolution endpoint for resolving saved slugs into book & cover documents.
 - `/api/books/[slug]/pages` — Paginated page streaming & prefetching endpoint.
 - `/sitemap.xml` — Dynamic SEO sitemap.
@@ -89,5 +96,15 @@ VasukiPublication is the public web presentation and reader application for book
 - **Batch Resolution**: `/saved` queries `/api/books/batch` with local slugs in a single `$in` query rather than $N$ separate network requests.
 - **Multi-Tab Sync**: Uses React 19 `useSyncExternalStore` combined with `storage` and custom `vasuki-saved-books-changed` events.
 - **Stale Cleanups**: Deleted, private, or unpublished books are automatically omitted from output.
+
+---
+
+## 6. Private Admin Management Architecture
+
+- **Authentication Model**: Single administrator authentication powered by server-only environment variables `ADMIN_ACCESS_TOKEN` and `ADMIN_SESSION_SECRET`.
+- **Timing Side-Channel Protection**: All access token verification is performed in constant time using `crypto.timingSafeEqual`.
+- **Stateless HMAC-SHA256 Sessions**: Sessions are signed cryptographically using HMAC-SHA256 and stored in an `HttpOnly`, `SameSite=Strict`, `Secure` (in production) cookie (`vasuki_admin_session`).
+- **Zero Framework Bloat**: No NextAuth or third-party auth dependencies; clean server actions with dynamic route revalidation (`revalidatePath`).
+- **Safe Destructive Invariants**: Book deletions cascade across `books`, `pages`, and `covers` while preserving `ads`. Exact title confirmation is required.
 
 

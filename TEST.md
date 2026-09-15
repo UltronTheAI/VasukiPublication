@@ -61,7 +61,15 @@ This document defines the comprehensive testing strategy, test suites, acceptanc
 - **Metadata Generation**: Dynamic OpenGraph tags, canonical URLs, and structured JSON-LD schemas generate valid metadata for all public book pages.
 - **Draft Concealment**: Draft or private books return `robots: { index: false, follow: false }` and `404 Not Found` on public routes.
 
-### 1.7 Failure & Recovery Tests
+### 1.7 Admin Authentication & Management Tests
+- **Timing-Safe Verification**: `timingSafeCompare()` performs constant-time equality check on admin access token.
+- **Session Cryptography**: `signSessionPayload()` produces HMAC-SHA256 tokens; `verifySessionToken()` rejects altered payloads, forged signatures, and expired sessions.
+- **Brute-Force Rate Limiting**: 5 consecutive failed login attempts locks out client IP for 15 minutes; successful login resets counters.
+- **Cascade Deletion Invariant**: Deleting a book safely deletes the book document, all chapter pages, and cover artwork while strictly preserving unrelated ads.
+- **Hero Pin Ranking Invariants**: Maximum 5 pinned publications enforced at the repository level; duplicate positions resolved automatically.
+- **Origin / CSRF Verification**: Privileged write actions require valid Origin/Host header match.
+
+### 1.8 Failure & Recovery Tests
 - **MongoDB Disconnection**: If MongoDB is unreachable, repository calls reject with clean error payloads and render graceful error boundaries rather than hanging indefinitely.
 - **Serverless Cold Start**: MongoDB connection caching survives warm serverless invocations.
 
