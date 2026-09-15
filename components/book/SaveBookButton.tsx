@@ -44,7 +44,7 @@ export function SaveBookButton({
         } ${className}`}
       >
         {saved ? (
-          <BookmarkCheck className="w-4 h-4 text-emerald-600 dark:text-brand-green" />
+          <BookmarkCheck className="w-4 h-4 text-emerald-600" />
         ) : (
           <Bookmark className="w-4 h-4" />
         )}
@@ -63,13 +63,13 @@ export function SaveBookButton({
       }
       className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-all text-xs font-semibold shadow-2xs cursor-pointer ${
         saved
-          ? "border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 hover:bg-emerald-100"
+          ? "border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
           : "border-hairline hover:border-hairline-strong bg-white text-ink hover:bg-canvas-soft"
       } ${className}`}
     >
       {saved ? (
         <>
-          <BookmarkCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-brand-green" />
+          <BookmarkCheck className="w-3.5 h-3.5 text-emerald-600" />
           <span>Saved to Queue</span>
         </>
       ) : (

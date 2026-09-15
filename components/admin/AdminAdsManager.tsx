@@ -166,27 +166,27 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-              <Megaphone className="w-4 h-4 text-emerald-400" />
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200">
+              <Megaphone className="w-4 h-4 text-emerald-700" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-white">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">
               Native Advertisements
             </h1>
-            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-semibold bg-slate-100 text-slate-600 border border-slate-200">
               {ads.length} {ads.length === 1 ? "ad" : "ads"}
             </span>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500">
             Configure restrained native sponsor slots for homepage and saved books spaces.
           </p>
         </div>
 
         <button
           onClick={openCreateModal}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#001e2b] text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>Create New Ad</span>
@@ -198,21 +198,21 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
         <div
           className={`p-3.5 rounded-xl border flex items-center justify-between text-xs ${
             feedback.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-              : "bg-red-500/10 border-red-500/30 text-red-300"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+              : "bg-red-50 border-red-200 text-red-800"
           }`}
         >
           <div className="flex items-center gap-2">
             {feedback.type === "success" ? (
-              <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
             ) : (
-              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
             )}
             <span>{feedback.message}</span>
           </div>
           <button
             onClick={() => setFeedback(null)}
-            className="text-slate-400 hover:text-white font-bold ml-2"
+            className="text-slate-400 hover:text-slate-900 font-bold ml-2 cursor-pointer"
           >
             ×
           </button>
@@ -220,11 +220,11 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
       )}
 
       {/* Advertisements Table */}
-      <div className="rounded-xl border border-slate-800 bg-[#04141d] overflow-hidden shadow-xs">
+      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-800 bg-black/20 text-slate-400 font-mono">
+              <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-mono">
                 <th className="px-4 py-3">Sponsor / Title</th>
                 <th className="px-4 py-3">Placements</th>
                 <th className="px-4 py-3">Priority</th>
@@ -235,7 +235,7 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-100">
               {ads.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
@@ -249,16 +249,16 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                   const ctr = impressions > 0 ? ((clicks / impressions) * 100).toFixed(2) : "0.00";
 
                   return (
-                    <tr key={ad.id} className="hover:bg-slate-800/30 transition-colors">
+                    <tr key={ad.id} className="hover:bg-slate-50/80 transition-colors">
                       {/* Sponsor & Title */}
                       <td className="px-4 py-3 min-w-[200px]">
-                        <div className="font-semibold text-slate-100">{ad.headline}</div>
-                        <div className="text-[11px] text-emerald-400 font-medium">{ad.sponsor}</div>
+                        <div className="font-semibold text-slate-900">{ad.headline}</div>
+                        <div className="text-[11px] text-emerald-700 font-medium">{ad.sponsor}</div>
                         <a
                           href={ad.url}
                           target="_blank"
                           rel="noopener noreferrer nofollow"
-                          className="text-[10.5px] font-mono text-slate-500 hover:text-slate-300 truncate max-w-[240px] block mt-0.5"
+                          className="text-[10.5px] font-mono text-slate-400 hover:text-slate-700 truncate max-w-[240px] block mt-0.5"
                         >
                           {ad.url}
                         </a>
@@ -270,7 +270,7 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                           {ad.placements?.map((p) => (
                             <span
                               key={p}
-                              className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-slate-800 border border-slate-700 text-slate-300"
+                              className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-slate-100 border border-slate-200 text-slate-600"
                             >
                               {p}
                             </span>
@@ -280,7 +280,7 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
 
                       {/* Priority */}
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                        <span className="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
                           P{ad.priority}
                         </span>
                       </td>
@@ -290,8 +290,8 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
                             ad.active
-                              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                              : "bg-slate-700/40 text-slate-400 border border-slate-700"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : "bg-slate-100 text-slate-500 border border-slate-200"
                           }`}
                         >
                           {ad.active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
@@ -300,17 +300,17 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                       </td>
 
                       {/* Impressions */}
-                      <td className="px-4 py-3 font-mono text-slate-300 whitespace-nowrap">
+                      <td className="px-4 py-3 font-mono text-slate-700 whitespace-nowrap">
                         {impressions.toLocaleString()}
                       </td>
 
                       {/* Clicks */}
-                      <td className="px-4 py-3 font-mono text-slate-300 whitespace-nowrap">
+                      <td className="px-4 py-3 font-mono text-slate-700 whitespace-nowrap">
                         {clicks.toLocaleString()}
                       </td>
 
                       {/* CTR */}
-                      <td className="px-4 py-3 font-mono font-semibold text-emerald-400 whitespace-nowrap">
+                      <td className="px-4 py-3 font-mono font-semibold text-emerald-700 whitespace-nowrap">
                         {ctr}%
                       </td>
 
@@ -320,7 +320,7 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                           <button
                             onClick={() => openEditModal(ad)}
                             disabled={isPending}
-                            className="p-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer shadow-xs"
                             title="Edit Ad"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -328,7 +328,7 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                           <button
                             onClick={() => handleDeleteAd(ad.id)}
                             disabled={isPending}
-                            className="p-1.5 rounded-lg border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 transition-colors cursor-pointer shadow-xs"
                             title="Delete Ad"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -346,18 +346,18 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
 
       {/* Create / Edit Modal with Live Preview */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in overflow-y-auto">
-          <div className="w-full max-w-4xl p-6 rounded-2xl border border-slate-800 bg-[#00141d] shadow-2xl space-y-6 my-8">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in overflow-y-auto">
+          <div className="w-full max-w-4xl p-6 rounded-2xl border border-slate-200 bg-white shadow-2xl space-y-6 my-8">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <div className="flex items-center gap-2">
-                <Megaphone className="w-4 h-4 text-emerald-400" />
-                <h3 className="font-bold text-sm text-white">
+                <Megaphone className="w-4 h-4 text-emerald-600" />
+                <h3 className="font-bold text-sm text-slate-900">
                   {editingAd ? "Edit Advertisement" : "Create Native Advertisement"}
                 </h3>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-900 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -367,55 +367,55 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
               {/* Form Side */}
               <form onSubmit={handleSaveAd} className="space-y-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-300">Internal Title</label>
+                  <label className="text-xs font-semibold text-slate-700">Internal Title</label>
                   <input
                     type="text"
                     required
                     value={formValues.title}
                     onChange={(e) => setFormValues({ ...formValues, title: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-[#000d14] border border-slate-700 rounded-lg text-xs text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-hidden focus:bg-white focus:border-emerald-500"
                     placeholder="e.g. Q1 Developer Tool Campaign"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-300">Sponsor Name</label>
+                  <label className="text-xs font-semibold text-slate-700">Sponsor Name</label>
                   <input
                     type="text"
                     required
                     value={formValues.sponsor}
                     onChange={(e) => setFormValues({ ...formValues, sponsor: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-[#000d14] border border-slate-700 rounded-lg text-xs text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-hidden focus:bg-white focus:border-emerald-500"
                     placeholder="e.g. Supabase, MongoDB, Vercel"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-300">Headline</label>
+                  <label className="text-xs font-semibold text-slate-700">Headline</label>
                   <input
                     type="text"
                     required
                     value={formValues.headline}
                     onChange={(e) => setFormValues({ ...formValues, headline: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-[#000d14] border border-slate-700 rounded-lg text-xs text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-hidden focus:bg-white focus:border-emerald-500"
                     placeholder="e.g. Build faster with distributed databases"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-300">Description</label>
+                  <label className="text-xs font-semibold text-slate-700">Description</label>
                   <textarea
                     rows={2}
                     required
                     value={formValues.description}
                     onChange={(e) => setFormValues({ ...formValues, description: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-[#000d14] border border-slate-700 rounded-lg text-xs text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-hidden focus:bg-white focus:border-emerald-500"
                     placeholder="Concise value proposition for developers..."
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-300">
+                  <label className="text-xs font-semibold text-slate-700">
                     Destination URL (http:// or https:// only)
                   </label>
                   <input
@@ -423,24 +423,24 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                     required
                     value={formValues.url}
                     onChange={(e) => setFormValues({ ...formValues, url: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-[#000d14] border border-slate-700 rounded-lg text-xs text-slate-100 font-mono focus:outline-hidden focus:border-emerald-500"
+                    className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 font-mono focus:outline-hidden focus:bg-white focus:border-emerald-500"
                     placeholder="https://sponsor.com/offer"
                   />
                 </div>
 
                 {/* Placements */}
                 <div className="space-y-1.5 pt-1">
-                  <label className="text-xs font-semibold text-slate-300 block">Placements</label>
+                  <label className="text-xs font-semibold text-slate-700 block">Placements</label>
                   <div className="grid grid-cols-2 gap-2">
                     {PLACEMENT_OPTIONS.map((opt) => {
                       const checked = formValues.placements.includes(opt.id);
                       return (
                         <label
                           key={opt.id}
-                          className={`flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer ${
+                          className={`flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer transition-colors ${
                             checked
-                              ? "bg-emerald-500/15 border-emerald-500 text-emerald-300"
-                              : "bg-[#000d14] border-slate-800 text-slate-400"
+                              ? "bg-emerald-50 border-emerald-300 text-emerald-900"
+                              : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                           }`}
                         >
                           <input
@@ -459,7 +459,7 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                                 });
                               }
                             }}
-                            className="w-3.5 h-3.5 accent-emerald-500 rounded"
+                            className="w-3.5 h-3.5 accent-emerald-600 rounded"
                           />
                           <span>{opt.label}</span>
                         </label>
@@ -471,11 +471,11 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                 {/* Priority & Status */}
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-300">Priority Weight</label>
+                    <label className="text-xs font-semibold text-slate-700">Priority Weight</label>
                     <select
                       value={formValues.priority}
                       onChange={(e) => setFormValues({ ...formValues, priority: parseInt(e.target.value, 10) })}
-                      className="w-full px-3 py-1.5 bg-[#000d14] border border-slate-700 rounded-lg text-xs text-slate-100 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
+                      className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-hidden focus:bg-white focus:border-emerald-500 cursor-pointer"
                     >
                       <option value={1}>Priority 1 (Weight 10)</option>
                       <option value={2}>Priority 2 (Weight 5)</option>
@@ -484,11 +484,11 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-300">Status</label>
+                    <label className="text-xs font-semibold text-slate-700">Status</label>
                     <select
                       value={formValues.active ? "active" : "paused"}
                       onChange={(e) => setFormValues({ ...formValues, active: e.target.value === "active" })}
-                      className="w-full px-3 py-1.5 bg-[#000d14] border border-slate-700 rounded-lg text-xs text-slate-100 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
+                      className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-hidden focus:bg-white focus:border-emerald-500 cursor-pointer"
                     >
                       <option value="active">Active (Eligible for delivery)</option>
                       <option value="paused">Paused</option>
@@ -496,18 +496,18 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-800">
+                <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 cursor-pointer"
+                    className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-700 cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isPending || formValues.placements.length === 0}
-                    className="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#001e2b] text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-xs"
+                    className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shadow-xs"
                   >
                     {isPending ? "Saving..." : editingAd ? "Save Changes" : "Create Ad"}
                   </button>
@@ -515,17 +515,17 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
               </form>
 
               {/* Live Preview Side */}
-              <div className="space-y-4 p-4 rounded-xl border border-slate-800 bg-[#000d14]">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-800 text-xs">
-                  <span className="font-semibold text-slate-300">Live Component Preview</span>
+              <div className="space-y-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200 text-xs">
+                  <span className="font-semibold text-slate-700">Live Component Preview</span>
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => setPreviewPlacement("banner")}
-                      className={`px-2 py-0.5 rounded text-[10.5px] font-mono cursor-pointer ${
+                      className={`px-2 py-0.5 rounded text-[10.5px] font-mono cursor-pointer transition-colors ${
                         previewPlacement === "banner"
-                          ? "bg-emerald-500 text-[#001e2b] font-bold"
-                          : "text-slate-400 hover:text-white"
+                          ? "bg-emerald-600 text-white font-bold shadow-xs"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200"
                       }`}
                     >
                       Banner
@@ -533,10 +533,10 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                     <button
                       type="button"
                       onClick={() => setPreviewPlacement("sidebar")}
-                      className={`px-2 py-0.5 rounded text-[10.5px] font-mono cursor-pointer ${
+                      className={`px-2 py-0.5 rounded text-[10.5px] font-mono cursor-pointer transition-colors ${
                         previewPlacement === "sidebar"
-                          ? "bg-emerald-500 text-[#001e2b] font-bold"
-                          : "text-slate-400 hover:text-white"
+                          ? "bg-emerald-600 text-white font-bold shadow-xs"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200"
                       }`}
                     >
                       Sidebar
@@ -544,7 +544,7 @@ export function AdminAdsManager({ initialAds }: AdminAdsManagerProps) {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg bg-slate-900 border border-slate-800 text-ink">
+                <div className="p-4 rounded-lg bg-white border border-slate-200 text-ink shadow-xs">
                   {previewPlacement === "banner" ? (
                     <NativeAdBanner ad={previewAdMock} />
                   ) : (

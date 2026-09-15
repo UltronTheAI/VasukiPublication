@@ -82,7 +82,7 @@ export function AdminBooksTable({
       )}
 
       {/* Filter Toolbar */}
-      <div className="p-4 rounded-xl bg-[#04141d] border border-slate-800 flex flex-col md:flex-row gap-3 items-center justify-between">
+      <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs flex flex-col md:flex-row gap-3 items-center justify-between">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -90,13 +90,13 @@ export function AdminBooksTable({
           }}
           className="relative w-full md:w-80"
         >
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Search by title, slug, author..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-[#00141d] border border-slate-700/80 rounded-lg text-xs text-slate-200 placeholder:text-slate-500 focus:outline-hidden focus:border-emerald-500 transition-colors"
+            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:bg-white focus:border-emerald-500 transition-colors"
           />
         </form>
 
@@ -105,7 +105,7 @@ export function AdminBooksTable({
           <select
             value={currentStatus}
             onChange={(e) => applyFilters(undefined, e.target.value, undefined, 1)}
-            className="bg-[#00141d] border border-slate-700/80 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
+            className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 focus:outline-hidden focus:bg-white focus:border-emerald-500 cursor-pointer"
           >
             <option value="all">All Statuses</option>
             <option value="published">Published</option>
@@ -117,23 +117,23 @@ export function AdminBooksTable({
           <select
             value={currentVisibility}
             onChange={(e) => applyFilters(undefined, undefined, e.target.value, 1)}
-            className="bg-[#00141d] border border-slate-700/80 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
+            className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 focus:outline-hidden focus:bg-white focus:border-emerald-500 cursor-pointer"
           >
             <option value="all">All Visibility</option>
             <option value="public">Public</option>
             <option value="private">Private</option>
           </select>
 
-          {isPending && <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />}
+          {isPending && <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />}
         </div>
       </div>
 
       {/* Publications Table */}
-      <div className="rounded-xl border border-slate-800 bg-[#04141d] overflow-hidden shadow-xs">
+      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-800 bg-black/20 text-slate-400 font-mono">
+              <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-mono">
                 <th className="px-4 py-3 font-semibold">Publication</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
                 <th className="px-4 py-3 font-semibold">Visibility</th>
@@ -143,7 +143,7 @@ export function AdminBooksTable({
                 <th className="px-4 py-3 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-100">
               {result.items.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
@@ -161,11 +161,11 @@ export function AdminBooksTable({
                   return (
                     <tr
                       key={book.slug}
-                      className="hover:bg-slate-800/30 transition-colors"
+                      className="hover:bg-slate-50/80 transition-colors"
                     >
                       {/* Title & Slug */}
                       <td className="px-4 py-3 min-w-[220px]">
-                        <div className="font-semibold text-slate-100 mb-0.5">
+                        <div className="font-semibold text-slate-900 mb-0.5">
                           {book.title}
                         </div>
                         <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
@@ -173,7 +173,7 @@ export function AdminBooksTable({
                           {book.category && (
                             <>
                               <span>•</span>
-                              <span className="text-emerald-400">{book.category}</span>
+                              <span className="text-emerald-700">{book.category}</span>
                             </>
                           )}
                         </div>
@@ -184,10 +184,10 @@ export function AdminBooksTable({
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
                             book.publication.status === "published"
-                              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                               : book.publication.status === "draft"
-                              ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                              : "bg-slate-700/40 text-slate-400 border border-slate-700"
+                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              : "bg-slate-100 text-slate-600 border border-slate-200"
                           }`}
                         >
                           {book.publication.status}
@@ -199,8 +199,8 @@ export function AdminBooksTable({
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
                             book.publication.visibility === "public"
-                              ? "bg-blue-500/15 text-blue-400 border border-blue-500/30"
-                              : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
+                              ? "bg-blue-50 text-blue-700 border border-blue-200"
+                              : "bg-rose-50 text-rose-700 border border-rose-200"
                           }`}
                         >
                           {book.publication.visibility}
@@ -208,9 +208,9 @@ export function AdminBooksTable({
                       </td>
 
                       {/* Page Count */}
-                      <td className="px-4 py-3 whitespace-nowrap font-mono text-slate-300">
+                      <td className="px-4 py-3 whitespace-nowrap font-mono text-slate-700">
                         <div className="flex items-center gap-1">
-                          <FileText className="w-3.5 h-3.5 text-slate-500" />
+                          <FileText className="w-3.5 h-3.5 text-slate-400" />
                           <span>{book.page_count || 0}</span>
                         </div>
                       </td>
@@ -218,17 +218,17 @@ export function AdminBooksTable({
                       {/* Hero Pin Status */}
                       <td className="px-4 py-3 whitespace-nowrap">
                         {isPinned ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 text-[11px] font-mono font-bold">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-mono font-bold">
                             <Pin className="w-3 h-3" />
                             <span>#{book.featured?.position || "1"}</span>
                           </span>
                         ) : (
-                          <span className="text-[11px] text-slate-600 font-mono">—</span>
+                          <span className="text-[11px] text-slate-400 font-mono">—</span>
                         )}
                       </td>
 
                       {/* Updated Date */}
-                      <td className="px-4 py-3 whitespace-nowrap text-slate-400 text-[11px] font-mono">
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-500 text-[11px] font-mono">
                         {book.updated_at
                           ? new Date(book.updated_at).toLocaleDateString()
                           : "—"}
@@ -244,8 +244,8 @@ export function AdminBooksTable({
                             title={isPinned ? "Unpin from Hero" : "Pin to Hero (1..5)"}
                             className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
                               isPinned
-                                ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/30"
-                                : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
+                                ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                                : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                             }`}
                           >
                             {isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
@@ -254,7 +254,7 @@ export function AdminBooksTable({
                           {/* Edit Details */}
                           <Link
                             href={`/admin/books/${bookId}`}
-                            className="p-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                            className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors"
                             title="Edit Publication"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -265,7 +265,7 @@ export function AdminBooksTable({
                             <Link
                               href={`/book/${book.slug}`}
                               target="_blank"
-                              className="p-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-400 hover:text-slate-900 transition-colors"
                               title="View Public Page"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
@@ -283,7 +283,7 @@ export function AdminBooksTable({
 
         {/* Pagination Bar */}
         {result.total_pages > 1 && (
-          <div className="p-3 border-t border-slate-800 bg-black/20 flex items-center justify-between text-xs text-slate-400 font-mono">
+          <div className="p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-600 font-mono">
             <span>
               Page {result.page} of {result.total_pages} ({result.total} total)
             </span>
@@ -291,14 +291,14 @@ export function AdminBooksTable({
               <button
                 onClick={() => applyFilters(undefined, undefined, undefined, currentPage - 1)}
                 disabled={!result.has_previous || isPending}
-                className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-300 transition-colors cursor-pointer"
+                className="p-1.5 rounded border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 text-slate-700 transition-colors cursor-pointer"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => applyFilters(undefined, undefined, undefined, currentPage + 1)}
                 disabled={!result.has_next || isPending}
-                className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-300 transition-colors cursor-pointer"
+                className="p-1.5 rounded border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 text-slate-700 transition-colors cursor-pointer"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>

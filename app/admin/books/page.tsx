@@ -64,20 +64,20 @@ export default async function AdminBooksPage({ searchParams }: AdminBooksPagePro
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-              <BookOpen className="w-4 h-4 text-emerald-400" />
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center">
+              <BookOpen className="w-4 h-4 text-emerald-600" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-white">
+            <h1 className="text-xl font-black tracking-tight text-slate-900 font-sans">
               Publications Directory
             </h1>
-            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
               {result.total} {result.total === 1 ? "book" : "books"}
             </span>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500">
             Search, filter by publication status, configure hero pin ranking, and update metadata.
           </p>
         </div>
