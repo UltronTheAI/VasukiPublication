@@ -26,30 +26,45 @@ Unlike traditional publishing websites that force users to download static PDF f
 ┌─────────────────────────────────────────────────────────────┐
 │                      VasukiPublication                      │
 │   (Next.js App Router • React Server Components • Reader)   │
+│                                                             │
+│  ┌───────────────┐     ┌───────────────┐   ┌─────────────┐  │
+│  │   Discovery   │     │    Reader     │   │    Admin    │  │
+│  │  Home • Search│     │  DOM Pages    │   │  Dashboard  │  │
+│  │  Ads • Covers │     │  Zero Ads     │   │  CRUD • SEO │  │
+│  └───────────────┘     └───────────────┘   └─────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Feature Status
+## Key Features
 
-### ✅ Implemented
-- **MongoDB Connection Layer**: Connection pooling with global caching in development and serverless optimization.
-- **Strict Publication Typing**: Full TypeScript interfaces matching VasukiSquare schemas (`Book`, `Page`, `Cover`, `Ad`, `ContentBlock` union).
-- **Repository Abstraction**: Server-only read data access helpers (`getPublicBooks`, `getPublicBookBySlug`, `getPinnedBooks`, `searchBooks`, `getSitemapBooks`, `getBookPages`, `getCoverForBook`, `getCoversForBooks`, `getActiveAds`).
-- **VasukiSquare Compatibility Layer**: Isolated A4 book render tokens (`lib/vasuki/render-tokens.ts`), Zod schema validators (`book-schema.ts`), and Lucide icon mapper (`icon-map.ts`).
-- **Public Homepage & Discovery**: URL-driven search (`?q=...`), pagination (`?page=...`), featured publications showcase (max 5 pinned), responsive book cards, and native ad confirmation dialog.
-- **Book Detail Experience (`/book/[slug]`)**: Dynamic cover preview, synopsis, author attribution, reading time estimate, chapter table of contents, and JSON-LD structured data (`schema.org/Book`).
-- **Dynamic OpenGraph Images (`/book/[slug]/opengraph-image`)**: Server-generated 1200x630 social preview cards using `ImageResponse` from `next/og`.
-- **Save Book Integration**: Hydration-safe reactive localStorage toggle using `useSyncExternalStore`.
-- **Security & Sanitization**: Protocol-safe URL validation, hostname extraction, constant-time secret comparison, and HTML XSS sanitization.
-- **Environment Validation**: Strict runtime Zod schema validation separating public from server-only secrets in `lib/env.ts`.
-- **Testing & QA**: Comprehensive test suites across discovery, security, data filtering, cover fallbacks, and SEO generation.
-
-### 📋 Planned (Next Phase)
-- **Interactive Reader (`/book/[slug]/read`)**: Pure web A4 page viewer, keyboard navigation (left/right arrows), spread view, lazy page chunking, and isolated light/dark theme toggling.
-- **Saved Books Page (`/saved`)**: Reading queue drawer and offline library.
-- **Dynamic Sitemap Route (`/sitemap.xml`)**: Automated indexing route for search engines.
+- **Zero-PDF Native Web Reader (`/book/[slug]/read`)**:
+  - Reconstructs publications directly from structured MongoDB page blocks into responsive, pixel-accurate A4 DOM pages (1:1.414 aspect ratio).
+  - Linked-list page progression, progressive prefetching, full keyboard navigation (left/right arrow keys), and spread view mode.
+  - **Zero Ads Rule**: Advertisements are strictly prohibited inside the book reader container.
+- **Public Book Discovery & Catalog (`/`)**:
+  - URL-driven search (`?q=...`) and pagination (`?page=...`).
+  - Featured publication showcase supporting up to 5 pinned books sorted by editorial priority.
+  - Responsive book cards with dynamic cover previews, synopses, author attribution, and reading times.
+- **Book Detail Experience (`/book/[slug]`)**:
+  - Complete chapter hierarchy, table of contents, and topic metadata.
+  - Schema.org/Book JSON-LD structured data and dynamic edge-rendered OpenGraph previews (`/book/[slug]/opengraph-image`).
+- **Anonymous Browser-Local Saved Books (`/saved`)**:
+  - Hydration-safe client-side reading queue using `localStorage` (`vasuki.savedBooks.v1`) and React 19 `useSyncExternalStore`.
+  - Multi-tab synchronization without reader registration, database user accounts, or server-side tracking.
+  - High-performance batch resolution endpoint (`/api/books/batch`).
+- **Private Administrative Portal (`/admin`)**:
+  - Protected single-administrator authentication using constant-time token validation (`crypto.timingSafeEqual`) and signed HMAC-SHA256 session cookies.
+  - Brute-force rate limiting and Origin/Host CSRF verification.
+  - Overview dashboard, publications directory, hero pin ranking editor (1..5), live cover design customizer with instant preview, and safe cascade deletion requiring title confirmation.
+- **Native Advertisements Model (`/admin/ads`)**:
+  - Restrained native sponsor cards in website discovery spaces (`home_banner`, `home_sidebar`, `saved_banner`, `saved_sidebar`).
+  - Priority-weighted rotation (P1: 10, P2: 5, P3: 2), safe outbound confirmation modals, and anonymous impression/click counters.
+- **Production SEO & Security**:
+  - Dynamic sitemap (`/sitemap.xml`) and robots exclusion rules (`/robots.txt`).
+  - Production security headers: Content-Security-Policy, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy.
+  - Legal compliance pages for Privacy Policy (`/privacy`) and Terms of Service (`/terms`).
 
 ---
 
@@ -68,25 +83,52 @@ Unlike traditional publishing websites that force users to download static PDF f
 ## Architecture & Design Invariants
 
 1. **Design System Isolation**:
-   - The **Website Shell** follows [`DESIGN.md`](./DESIGN.md) (Vercel-inspired monochrome and mesh gradients).
-   - The **Book Reader** follows [`lib/vasuki/render-tokens.ts`](./lib/vasuki/render-tokens.ts) (VasukiSquare publication tokens).
+   - The **Website Shell** strictly follows [`DESIGN.md`](./DESIGN.md) (dark/light contrast, monochrome with brand accents).
+   - The **Book Reader** follows [`lib/vasuki/render-tokens.ts`](./lib/vasuki/render-tokens.ts) (isolated VasukiSquare publication tokens).
 2. **Zero PDF Dependency**:
-   - Books are rendered natively from MongoDB documents. No PDF uploads, no PDF parsing.
-3. **Strict Ad Boundaries**:
-   - Advertisements appear strictly in website discovery spaces and are **never** rendered inside the book reader.
+   - Books and covers are rendered natively from MongoDB documents. No PDF parsing, upload, or runtime dependency exists.
+3. **Strict Ad Boundary**:
+   - Advertisements appear exclusively in website discovery spaces and are **never** rendered inside the book reader.
 4. **Server-Only Data Access**:
-   - Client components cannot query MongoDB. All data access occurs through Server Components and `lib/repositories/*`.
+   - Client components cannot query MongoDB directly. All data access occurs through Server Components and `lib/repositories/*`.
+5. **Single-Operator Security**:
+   - Zero public user accounts. Administrative access is restricted to the operator holding `ADMIN_ACCESS_TOKEN`.
+
+---
+
+## Route Overview
+
+| Route | Type | Description |
+| :--- | :--- | :--- |
+| `/` | Server Component | Public homepage, hero search, pinned books, book catalog, native ads |
+| `/book/[slug]` | Server Component | Book detail page, synopsis, chapter outline, JSON-LD data |
+| `/book/[slug]/opengraph-image` | Dynamic OG Image | 1200x630 dynamic social preview card generator |
+| `/book/[slug]/read` | Client/Server Reader | Interactive A4 reader, keyboard navigation, zero ads |
+| `/saved` | Client/Server Hybrid | Browser-local saved reading list with batch API resolution |
+| `/privacy` | Server Component | Transparency & privacy policy |
+| `/terms` | Server Component | Terms of service for public platform usage |
+| `/admin` | Server Component | Private administrative dashboard and operational metrics |
+| `/admin/login` | Client/Server Hybrid | Single-administrator login portal with brute-force rate limiter |
+| `/admin/books` | Server Component | Publications directory with search, filters, and quick pinning |
+| `/admin/books/[id]` | Client/Server Hybrid | Publication editor, live cover visualizer, safe cascade delete |
+| `/admin/ads` | Client/Server Hybrid | Native ads campaign management, metrics, and live component preview |
+| `/sitemap.xml` | Dynamic Metadata | Search engine sitemap indexing public publications |
+| `/robots.txt` | Dynamic Metadata | Crawler directives protecting admin and internal endpoints |
+| `/api/books/batch` | API Route Handler | Batch resolution endpoint for saved book slugs |
+| `/api/books/[slug]/pages` | API Route Handler | Paginated page streaming endpoint for reader prefetching |
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js 20.x+
-- MongoDB instance (local or Atlas)
+- Node.js 20.x or higher
+- MongoDB instance (local instance or MongoDB Atlas cluster)
 
 ### 1. Installation
 ```bash
+git clone https://github.com/UltronTheAI/VasukiPublication.git
+cd vasukipublication
 npm install
 ```
 
@@ -100,6 +142,8 @@ Configure your environment variables in `.env.local`:
 ```env
 MONGODB_URI=mongodb://127.0.0.1:27017
 MONGODB_DATABASE=vasukisquare
+ADMIN_ACCESS_TOKEN=vasuki_local_development_admin_token
+ADMIN_SESSION_SECRET=vasuki_local_development_session_secret_32chars
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_SITE_NAME=Vasuki Publication
 NODE_ENV=development
@@ -117,10 +161,11 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 | Script | Command | Description |
 | :--- | :--- | :--- |
-| `dev` | `npm run dev` | Runs Next.js development server |
-| `build` | `npm run build` | Builds production bundle with strict type checks |
-| `start` | `npm run start` | Runs production server |
-| `lint` | `npm run lint` | Runs ESLint analysis |
+| `dev` | `npm run dev` | Runs Next.js development server with hot reload |
+| `build` | `npm run build` | Compiles production bundle with strict TypeScript verification |
+| `start` | `npm run start` | Runs production server locally |
+| `lint` | `npm run lint` | Runs ESLint analysis across the codebase |
+| `test` | `npm test` | Runs Node.js test runner across all test suites |
 
 ---
 
@@ -128,43 +173,62 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ```
 vasukipublication/
-├── app/                    # Next.js App Router (pages, layouts, metadata)
+├── app/                    # Next.js App Router (pages, layouts, metadata, routes)
+│   ├── admin/              # Private administration portal
+│   ├── api/                # API route handlers (batch, pages)
+│   ├── book/[slug]/        # Book detail, reader, and OpenGraph routes
+│   ├── privacy/            # Privacy policy page
+│   ├── terms/              # Terms of service page
+│   ├── saved/              # Saved books page
+│   ├── sitemap.ts          # Dynamic sitemap generator
+│   └── robots.ts           # Dynamic robots manifest
 ├── components/
-│   ├── book/               # Isolated A4 book reader components
-│   ├── layout/             # Header, Footer, Hero, Navigation shells
-│   └── ui/                 # Reusable UI primitives (Buttons, Modals, Cards)
+│   ├── admin/              # Admin dashboard, forms, table, and editors
+│   ├── ads/                # Native advertisement components and modals
+│   ├── book/               # Book cards, grid, pinned showcase, save button
+│   ├── cover/              # Dynamic SVG/HTML cover renderer
+│   ├── discovery/          # Search bar, pagination, filters
+│   ├── layout/             # Site header, footer, navigation
+│   ├── reader/             # Isolated A4 book reader and page renderer
+│   └── saved/              # Saved books view
 ├── docs/                   # System & architecture documentation
+│   ├── admin.md            # Admin portal architecture & security
+│   ├── ads.md              # Native ads model & analytics
 │   ├── architecture.md     # System relationships and routing overview
 │   ├── book-rendering.md   # Zero-PDF rendering model and theme isolation
 │   ├── deployment.md       # Production checklist and Vercel setup
 │   ├── development.md      # Development workflow and scripts
 │   ├── mongodb.md          # Collections, schemas, and indexing guidelines
-│   └── security.md         # Threat model, secrets, and sanitization
+│   ├── security.md         # Threat model, secrets, and sanitization
+│   └── seo.md              # Canonicalization, sitemap, and OpenGraph
 ├── lib/
 │   ├── db/                 # MongoDB client, connections, and collections
 │   ├── env.ts              # Zod environment variable validation
+│   ├── hooks/              # Reusable React hooks (useSavedBooks)
 │   ├── repositories/       # Server-only repository data-access layer
-│   ├── security/           # URL validation, crypto, and HTML sanitization
-│   ├── types/              # Publication and schema TypeScript models
+│   ├── security/           # Admin auth, URL validation, crypto, HTML sanitization
+│   ├── types/              # Publication, Book, Page, and Cover TypeScript models
 │   ├── utils/              # General utilities (cn helper)
 │   └── vasuki/             # VasukiSquare compatibility layer and tokens
-├── public/                 # Static assets
-├── .env.example            # Environment variables template
+├── tests/                  # Automated test suites
 ├── AGENTS.md               # AI coding assistant guidelines
 ├── DESIGN.md               # Master website UI design specification
 ├── LICENSE                 # VasukiSquare Commercial Source License v1.0
-├── README.md               # Project documentation
+├── README.md               # Project overview and technical documentation
 └── TEST.md                 # Quality assurance & testing strategy
 ```
 
 ---
 
-## Documentation
+## Documentation Index
 
 - [Architecture Overview](docs/architecture.md)
-- [MongoDB Collections & Indexes](docs/mongodb.md)
-- [Book Rendering & Isolation](docs/book-rendering.md)
+- [MongoDB Schema & Invariants](docs/mongodb.md)
+- [Book Rendering & A4 Geometry](docs/book-rendering.md)
 - [Security Architecture](docs/security.md)
+- [Admin Management Portal](docs/admin.md)
+- [Native Advertisements Model](docs/ads.md)
+- [SEO & Canonicalization](docs/seo.md)
 - [Production Deployment Guide](docs/deployment.md)
 - [Development Workflow](docs/development.md)
 - [Testing Strategy & QA](TEST.md)
@@ -172,8 +236,8 @@ vasukipublication/
 
 ---
 
-## License & Copyright
+## License & Commercial Terms
 
 Copyright (c) 2026 Swaraj Puppalwar. All rights reserved.
 
-Licensed under the **VASUKISQUARE COMMERCIAL SOURCE LICENSE Version 1.0**. See the [`LICENSE`](./LICENSE) file for the full license terms.
+This project is source-available and governed by the **VASUKISQUARE COMMERCIAL SOURCE LICENSE Version 1.0**. See the [`LICENSE`](./LICENSE) file for complete commercial terms and redistribution restrictions.

@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: ReaderPageProps): Promise<Met
     book.subtitle ||
     `Interactive reading experience for ${book.title} on Vasuki Publication.`;
 
-  const canonicalUrl = `${publicEnv.NEXT_PUBLIC_SITE_URL}/book/${book.slug}/read`;
+  const canonicalUrl = `${publicEnv.NEXT_PUBLIC_SITE_URL}/book/${book.slug}`;
 
   return {
     title,
@@ -40,11 +40,11 @@ export async function generateMetadata({ params }: ReaderPageProps): Promise<Met
     openGraph: {
       title,
       description,
-      url: canonicalUrl,
+      url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/book/${book.slug}/read`,
       type: "article",
     },
     robots: {
-      index: true,
+      index: false,
       follow: true,
     },
   };

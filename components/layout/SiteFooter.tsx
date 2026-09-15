@@ -62,10 +62,17 @@ export function SiteFooter() {
                 <span>Zero-PDF Native DOM</span>
               </li>
               <li>
-                <span className="text-mute">License: VasukiSquare Commercial v1.0</span>
+                <Link href="/privacy" className="hover:text-ink transition-colors">
+                  Privacy Policy
+                </Link>
               </li>
               <li>
-                <span className="text-mute">Author: Swaraj Puppalwar</span>
+                <Link href="/terms" className="hover:text-ink transition-colors">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <span className="text-mute">License: Commercial Source v1.0</span>
               </li>
             </ul>
           </div>
