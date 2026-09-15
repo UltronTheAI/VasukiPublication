@@ -2,7 +2,8 @@ import React from "react";
 import Link from "next/link";
 import type { Book, Cover } from "@/lib/types/publication";
 import { CoverPreview } from "@/components/cover/CoverPreview";
-import { Sparkles, BookOpen, Layers, ArrowRight, Bookmark } from "lucide-react";
+import { SaveBookButton } from "./SaveBookButton";
+import { Sparkles, BookOpen, Layers, ArrowRight } from "lucide-react";
 
 interface PinnedSectionProps {
   books: Book[];
@@ -52,7 +53,7 @@ export function PinnedSection({ books, coversMap = {} }: PinnedSectionProps) {
               <div className="flex flex-col justify-between">
                 <div>
                   <h3 className="text-xl sm:text-2xl font-bold text-ink leading-tight group-hover:text-link transition-colors">
-                    <Link href={`/books/${leadBook.slug}`}>
+                    <Link href={`/book/${leadBook.slug}`}>
                       {leadBook.title}
                     </Link>
                   </h3>
@@ -90,19 +91,13 @@ export function PinnedSection({ books, coversMap = {} }: PinnedSectionProps) {
           </div>
 
           <div className="pt-4 border-t border-hairline flex items-center justify-between">
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 text-xs text-mute hover:text-ink font-mono transition-colors"
-            >
-              <Bookmark className="w-3.5 h-3.5" />
-              <span>Save for Later</span>
-            </button>
+            <SaveBookButton book={leadBook} />
 
             <Link
-              href={`/books/${leadBook.slug}`}
+              href={`/book/${leadBook.slug}`}
               className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold rounded-lg bg-ink text-white hover:bg-black transition-all shadow-xs hover:shadow-md cursor-pointer"
             >
-              <span>Read Publication</span>
+              <span>View Overview</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -136,7 +131,7 @@ export function PinnedSection({ books, coversMap = {} }: PinnedSectionProps) {
                   </div>
 
                   <h4 className="text-sm font-semibold text-ink group-hover:text-link transition-colors truncate">
-                    <Link href={`/books/${book.slug}`}>
+                    <Link href={`/book/${book.slug}`}>
                       {book.title}
                     </Link>
                   </h4>
@@ -149,10 +144,10 @@ export function PinnedSection({ books, coversMap = {} }: PinnedSectionProps) {
                 <div className="mt-3 flex items-center justify-between text-xs text-mute font-mono">
                   <span>{book.page_count} pages</span>
                   <Link
-                    href={`/books/${book.slug}`}
+                    href={`/book/${book.slug}`}
                     className="text-ink font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
                   >
-                    <span>Open</span>
+                    <span>Overview</span>
                     <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
@@ -164,4 +159,3 @@ export function PinnedSection({ books, coversMap = {} }: PinnedSectionProps) {
     </section>
   );
 }
-

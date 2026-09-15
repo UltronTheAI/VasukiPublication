@@ -68,12 +68,12 @@ VasukiPublication is the public web presentation and reader application for book
 
 ---
 
-## 4. Planned Route Hierarchy
+## 4. Route Hierarchy
 
-- `/` — Homepage: Hero, Featured Carousel (pinned 1..5), Recent Publications, Category Browse, Native Banner Ads.
-- `/books` — Catalog: Filterable, searchable, paginated list of all published books.
-- `/books/[slug]` — Book Details: Cover view, synopsis, chapter outline, metadata, start reading button.
-- `/books/[slug]/read` — Interactive Reader: Isolated A4 page viewer, linked-list page progression, zero ads.
+- `/` — Homepage: Hero, Featured Showcase (pinned 1..5), Recent Publications, Category Browse, Native Banner Ads.
+- `/book/[slug]` — Book Details: Cover view, synopsis, chapter outline, metadata, start reading button, JSON-LD structured data.
+- `/book/[slug]/opengraph-image` — Dynamic 1200x630 social preview generation using `ImageResponse`.
+- `/book/[slug]/read` — Interactive Reader: Isolated A4 page viewer, linked-list page progression, zero ads.
 - `/saved` — Saved Books: Local bookmarks and offline reading queue.
 - `/sitemap.xml` — Dynamic SEO sitemap.
 - `/robots.txt` — Search engine crawler instructions.

@@ -33,22 +33,23 @@ Unlike traditional publishing websites that force users to download static PDF f
 
 ## Feature Status
 
-### ✅ Implemented (Foundation Phase)
+### ✅ Implemented
 - **MongoDB Connection Layer**: Connection pooling with global caching in development and serverless optimization.
 - **Strict Publication Typing**: Full TypeScript interfaces matching VasukiSquare schemas (`Book`, `Page`, `Cover`, `Ad`, `ContentBlock` union).
-- **Repository Abstraction**: Server-only read data access helpers (`getPublicBooks`, `getPublicBookBySlug`, `getPinnedBooks`, `searchBooks`, `getSitemapBooks`, `getBookPages`, `getCoverForBook`, `getActiveAds`).
+- **Repository Abstraction**: Server-only read data access helpers (`getPublicBooks`, `getPublicBookBySlug`, `getPinnedBooks`, `searchBooks`, `getSitemapBooks`, `getBookPages`, `getCoverForBook`, `getCoversForBooks`, `getActiveAds`).
 - **VasukiSquare Compatibility Layer**: Isolated A4 book render tokens (`lib/vasuki/render-tokens.ts`), Zod schema validators (`book-schema.ts`), and Lucide icon mapper (`icon-map.ts`).
-- **Security Primitives**: Protocol-safe URL validation, hostname extraction, constant-time token comparison, and HTML sanitization.
+- **Public Homepage & Discovery**: URL-driven search (`?q=...`), pagination (`?page=...`), featured publications showcase (max 5 pinned), responsive book cards, and native ad confirmation dialog.
+- **Book Detail Experience (`/book/[slug]`)**: Dynamic cover preview, synopsis, author attribution, reading time estimate, chapter table of contents, and JSON-LD structured data (`schema.org/Book`).
+- **Dynamic OpenGraph Images (`/book/[slug]/opengraph-image`)**: Server-generated 1200x630 social preview cards using `ImageResponse` from `next/og`.
+- **Save Book Integration**: Hydration-safe reactive localStorage toggle using `useSyncExternalStore`.
+- **Security & Sanitization**: Protocol-safe URL validation, hostname extraction, constant-time secret comparison, and HTML XSS sanitization.
 - **Environment Validation**: Strict runtime Zod schema validation separating public from server-only secrets in `lib/env.ts`.
-- **Architectural Documentation**: Complete docs skeleton covering architecture, MongoDB models, rendering isolation, security, deployment, and testing.
+- **Testing & QA**: Comprehensive test suites across discovery, security, data filtering, cover fallbacks, and SEO generation.
 
-### 📋 Planned (Subsequent Phases)
-- **Homepage UI**: Vercel-inspired stark ink hero with mesh gradients, featured carousel (pinned 1..5), recent books grid, and native banner ads.
-- **Interactive Reader**: Pure web A4 page viewer, keyboard navigation, spread view, lazy page chunking, and theme toggling.
-- **Search & Filter Modal**: Full-text keyword search and category browsing with instant modal results (`Cmd+K`).
-- **Saved Books Drawer**: Client-side localStorage reading queue and offline persistence.
-- **Native Monetization**: Ad slots (`home_banner`, `home_sidebar`, `saved_banner`, `saved_sidebar`) with priority-weighted rotation and impression tracking.
-- **Automated SEO Engine**: Dynamic sitemap (`/sitemap.xml`), OpenGraph image generation, and JSON-LD schemas for search indexing.
+### 📋 Planned (Next Phase)
+- **Interactive Reader (`/book/[slug]/read`)**: Pure web A4 page viewer, keyboard navigation (left/right arrows), spread view, lazy page chunking, and isolated light/dark theme toggling.
+- **Saved Books Page (`/saved`)**: Reading queue drawer and offline library.
+- **Dynamic Sitemap Route (`/sitemap.xml`)**: Automated indexing route for search engines.
 
 ---
 

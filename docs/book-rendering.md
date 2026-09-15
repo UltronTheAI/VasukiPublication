@@ -1,6 +1,6 @@
-# VasukiPublication — Book Rendering Architecture
+# VasukiPublication — Book & Cover Rendering Architecture
 
-VasukiPublication renders technical books directly from MongoDB structured data and pre-rendered HTML components without relying on PDF files.
+VasukiPublication renders technical books and cover artwork directly from MongoDB structured data and pre-rendered HTML components without relying on PDF files.
 
 ---
 
@@ -44,7 +44,29 @@ The website shell and the book reader utilize separate, isolated design language
 
 ---
 
-## 4. A4 Geometry & Responsive Scaling
+## 4. Reusable Dynamic Cover Renderer (`CoverPreview`)
+
+Cover artwork is rendered directly from `Book` and `Cover` metadata without raster PDF screenshotting:
+
+- **Art-Directed Composition**: Supports `asymmetric_left`, `centered_editorial`, `large_typography`, `bottom_weighted`, `framed_technical`, `icon_led`, `split_panel`, and `minimal_slate`.
+- **Background Styling**: Adapts to `solid_light`, `subtle_grid`, `layered_mesh`, `radial_glow`, `split_tone`, and `minimal_slate`.
+- **Geometric Motifs**: Renders lightweight SVG geometric patterns (`database_nodes`, `circuit_grid`, `structural_rings`, `abstract_matrix`).
+- **Iconography**: Resolves Lucide icons dynamically via `lib/vasuki/icon-map.ts`.
+- **Deterministic Fallbacks**: When older records lack complete cover documents, the renderer falls back deterministically to book metadata (title, category, author, and Brand Green / Deep Teal tokens).
+
+---
+
+## 5. Dynamic OpenGraph Social Previews (`opengraph-image.tsx`)
+
+Each publication generates a dynamic 1200x630 social card via Next.js `ImageResponse` from `next/og`:
+
+- **Zero PDF / Browser Screenshots**: Renders pure JSX / SVG layout on edge / server.
+- **Visual Parity**: Reconstructs the publication's palette, typography, author, and cover identity.
+- **Performance**: Cached automatically by Next.js metadata routes without requiring image storage in MongoDB.
+
+---
+
+## 6. A4 Geometry & Responsive Scaling
 
 Every page adheres to standard A4 proportions (Width to Height ratio of `210 / 297 ≈ 0.7071`):
 
@@ -53,9 +75,8 @@ Every page adheres to standard A4 proportions (Width to Height ratio of `210 / 2
 
 ---
 
-## 5. Monetization & Content Integrity
+## 7. Monetization & Content Integrity
 
 To maintain an uncompromised reading experience:
 - **No Ads Inside Pages**: Advertisements are strictly prohibited from appearing within reader viewports or interrupting chapter flows.
 - **Clean Focus**: The reader provides distraction-free reading with simple navigation controls, reading progress indicators, and bookmarking.
-

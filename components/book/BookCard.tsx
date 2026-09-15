@@ -2,7 +2,8 @@ import React from "react";
 import Link from "next/link";
 import type { Book, Cover } from "@/lib/types/publication";
 import { CoverPreview } from "@/components/cover/CoverPreview";
-import { BookOpen, Layers, Bookmark, ArrowUpRight } from "lucide-react";
+import { SaveBookButton } from "./SaveBookButton";
+import { BookOpen, Layers, ArrowUpRight } from "lucide-react";
 
 interface BookCardProps {
   book: Book;
@@ -23,7 +24,7 @@ export function BookCard({ book, cover, className = "" }: BookCardProps) {
       <div>
         {/* Top: Cover Preview Link */}
         <Link
-          href={`/books/${book.slug}`}
+          href={`/book/${book.slug}`}
           className="block w-full flex justify-center py-2 bg-canvas-soft rounded-lg border border-hairline group-hover:border-hairline-strong transition-colors overflow-hidden relative"
         >
           <div className="group-hover:scale-103 transition-transform duration-200">
@@ -36,19 +37,12 @@ export function BookCard({ book, cover, className = "" }: BookCardProps) {
           <span className="text-[10px] font-mono uppercase tracking-wider text-mute bg-canvas-soft px-2 py-0.5 rounded border border-hairline font-semibold">
             {category}
           </span>
-          <button
-            type="button"
-            aria-label={`Save ${book.title} to reading list`}
-            className="text-mute hover:text-ink p-1 rounded-md transition-colors cursor-pointer"
-            title="Save book (Offline queue)"
-          >
-            <Bookmark className="w-3.5 h-3.5" />
-          </button>
+          <SaveBookButton book={book} variant="icon" />
         </div>
 
         {/* Title */}
         <h3 className="text-sm font-semibold text-ink line-clamp-2 leading-snug group-hover:text-link transition-colors">
-          <Link href={`/books/${book.slug}`} className="hover:underline">
+          <Link href={`/book/${book.slug}`} className="hover:underline">
             {book.title}
           </Link>
         </h3>
@@ -77,7 +71,7 @@ export function BookCard({ book, cover, className = "" }: BookCardProps) {
         </div>
 
         <Link
-          href={`/books/${book.slug}`}
+          href={`/book/${book.slug}`}
           className="inline-flex items-center gap-0.5 text-ink font-semibold group-hover:translate-x-0.5 transition-transform"
         >
           <span>Read</span>
@@ -87,4 +81,3 @@ export function BookCard({ book, cover, className = "" }: BookCardProps) {
     </div>
   );
 }
-
