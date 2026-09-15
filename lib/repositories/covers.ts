@@ -38,3 +38,25 @@ export async function getCoverById(coverId: string): Promise<Cover | null> {
   return normalizeCoverDoc(doc as unknown as Record<string, unknown>);
 }
 
+/**
+ * Batch retrieve covers for an array of book IDs to eliminate N+1 queries.
+ */
+export async function getCoversForBooks(bookIds: string[]): Promise<Record<string, Cover>> {
+  if (!bookIds || bookIds.length === 0) return {};
+
+  const collection = await getCoversCollection();
+  const docs = await collection
+    .find({
+      book_id: { $in: bookIds },
+    })
+    .toArray();
+
+  const map: Record<string, Cover> = {};
+  for (const doc of docs) {
+    const cover = normalizeCoverDoc(doc as unknown as Record<string, unknown>);
+    map[cover.book_id] = cover;
+    map[cover.id] = cover;
+  }
+  return map;
+}
+

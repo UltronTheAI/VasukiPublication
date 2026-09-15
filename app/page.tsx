@@ -1,69 +1,198 @@
-import Image from "next/image";
+import React, { Suspense } from "react";
+import Link from "next/link";
+import { getPublicBooks, getPinnedBooks, searchBooks } from "@/lib/repositories/books";
+import { getCoversForBooks } from "@/lib/repositories/covers";
+import { getActiveAds, selectWeightedAd } from "@/lib/repositories/ads";
+import { SearchBar } from "@/components/discovery/SearchBar";
+import { PinnedSection } from "@/components/book/PinnedSection";
+import { BookGrid } from "@/components/book/BookGrid";
+import { Pagination } from "@/components/discovery/Pagination";
+import { NativeAdBanner } from "@/components/ads/NativeAdBanner";
+import { NativeAdSidebar } from "@/components/ads/NativeAdSidebar";
+import type { Book, Cover } from "@/lib/types/publication";
+import { Sparkles, ShieldCheck, Terminal } from "lucide-react";
 
-export default function Home() {
+interface HomePageProps {
+  searchParams: Promise<{
+    q?: string;
+    page?: string;
+  }>;
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const resolvedParams = await searchParams;
+  const rawQuery = typeof resolvedParams.q === "string" ? resolvedParams.q : "";
+  const query = rawQuery.trim();
+  
+  const rawPage = typeof resolvedParams.page === "string" ? resolvedParams.page : "1";
+  const parsedPage = parseInt(rawPage, 10);
+  const currentPage = Number.isInteger(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
+
+  let booksResult = {
+    items: [] as Book[],
+    page: currentPage,
+    limit: 20,
+    total: 0,
+    total_pages: 1,
+    has_next: false,
+    has_previous: false,
+  };
+
+  let pinnedBooks: Book[] = [];
+  let coversMap: Record<string, Cover> = {};
+  let bannerAd = null;
+  let sidebarAd = null;
+  let dbError: string | null = null;
+
+  try {
+    // 1. Fetch public books or search results
+    if (query) {
+      booksResult = await searchBooks(query, currentPage, 20, true);
+    } else {
+      const [publicRes, pinnedRes] = await Promise.all([
+        getPublicBooks(currentPage, 20),
+        currentPage === 1 ? getPinnedBooks() : Promise.resolve([]),
+      ]);
+      booksResult = publicRes;
+      pinnedBooks = pinnedRes;
+    }
+
+    // 2. Fetch Native Ads
+    const [bannerAds, sidebarAds] = await Promise.all([
+      getActiveAds("home_banner"),
+      getActiveAds("home_sidebar"),
+    ]);
+    bannerAd = selectWeightedAd(bannerAds);
+    sidebarAd = selectWeightedAd(sidebarAds);
+
+    // 3. Batch fetch covers for all displayed books to prevent N+1 queries
+    const allBookIds = [
+      ...pinnedBooks.map((b) => b.id || b._id).filter(Boolean),
+      ...booksResult.items.map((b) => b.id || b._id).filter(Boolean),
+    ] as string[];
+
+    if (allBookIds.length > 0) {
+      coversMap = await getCoversForBooks(allBookIds);
+    }
+  } catch (err) {
+    console.error("[VasukiPublication] Failed to query homepage data from MongoDB:", err);
+    dbError = err instanceof Error ? err.message : "Database query failed";
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <div className="w-full flex flex-col items-center">
+      {/* Hero Section */}
+      <section className="w-full relative overflow-hidden hero-mesh-gradient border-b border-hairline py-14 sm:py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center flex flex-col items-center relative z-10">
+          {/* Eyebrow badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-hairline bg-white/80 backdrop-blur-xs text-xs font-mono text-mute mb-5 shadow-2xs">
+            <Sparkles className="w-3.5 h-3.5 text-brand-green" />
+            <span className="font-semibold text-ink">VasukiSquare Publication Network</span>
+          </div>
+
+          {/* Headline */}
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-ink max-w-2xl leading-[1.15] sm:leading-[1.12]">
+            Production Technical Books, Published for the Web
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          {/* Subheading */}
+          <p className="mt-4 text-sm sm:text-base text-body max-w-xl leading-relaxed">
+            High-density architecture manuals, engineering blueprints, and practical guides.
+            Streamed natively without PDF downloads.
           </p>
+
+          {/* Search Bar */}
+          <div className="w-full max-w-xl mt-8">
+            <Suspense fallback={<div className="h-11 bg-white rounded-lg border border-hairline animate-pulse" />}>
+              <SearchBar initialQuery={query} />
+            </Suspense>
+
+            {/* Quick Topic Chips */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3 text-[11px] font-mono text-mute">
+              <span>Popular:</span>
+              {["Rust", "Database", "Python", "Architecture", "Distributed", "Security"].map((topic) => (
+                <Link
+                  key={topic}
+                  href={`/?q=${encodeURIComponent(topic.toLowerCase())}`}
+                  className="px-2 py-0.5 rounded-md border border-hairline hover:border-hairline-strong bg-white/70 hover:bg-white text-body hover:text-ink transition-all shadow-2xs"
+                >
+                  {topic}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+      </section>
+
+      {/* Main Content Area */}
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+        {/* Database Error Banner */}
+        {dbError && (
+          <div className="w-full bg-red-50 border border-red-200 rounded-xl p-4 mb-8 text-xs text-red-800 flex items-start gap-3">
+            <ShieldCheck className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold">MongoDB connection notice:</p>
+              <p className="mt-0.5 opacity-90">
+                {dbError}. Please ensure MongoDB is running and populated.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Featured / Pinned Books Section (Page 1 with no search query) */}
+        {!query && currentPage === 1 && pinnedBooks.length > 0 && (
+          <PinnedSection books={pinnedBooks} coversMap={coversMap} />
+        )}
+
+        {/* Top Native Ad Banner Slot */}
+        {bannerAd && (
+          <div className="w-full mb-10">
+            <NativeAdBanner ad={bannerAd} />
+          </div>
+        )}
+
+        {/* Catalog Grid with Optional Sidebar Ad */}
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Main Book Listing */}
+          <div className={sidebarAd ? "lg:col-span-9" : "lg:col-span-12"}>
+            <BookGrid
+              books={booksResult.items}
+              coversMap={coversMap}
+              query={query}
+              total={booksResult.total}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+            {/* Pagination Controls */}
+            {booksResult.total_pages > 1 && (
+              <div className="mt-12 pt-8 border-t border-hairline flex justify-center">
+                <Pagination
+                  currentPage={booksResult.page}
+                  totalPages={booksResult.total_pages}
+                  query={query}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar Section */}
+          {sidebarAd && (
+            <aside className="lg:col-span-3 hidden lg:flex flex-col gap-6 sticky top-24">
+              <NativeAdSidebar ad={sidebarAd} />
+
+              {/* Quick Info Card */}
+              <div className="bg-canvas-soft border border-hairline rounded-xl p-4 text-xs text-body">
+                <div className="flex items-center gap-1.5 font-semibold text-ink mb-2">
+                  <Terminal className="w-3.5 h-3.5 text-brand-green" />
+                  <span>VasukiSquare Engine</span>
+                </div>
+                <p className="text-[11px] text-mute leading-relaxed">
+                  Publications are generated via multi-stage research, deterministic pagination, and strict typography contracts.
+                </p>
+              </div>
+            </aside>
+          )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
