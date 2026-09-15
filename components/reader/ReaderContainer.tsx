@@ -20,9 +20,12 @@ import {
   RotateCcw,
   ZoomIn,
   ZoomOut,
+  Bookmark,
+  BookmarkCheck,
 } from "lucide-react";
 import { VasukiBookPage } from "@/components/reader/VasukiBookPage";
 import { VasukiIcon } from "@/components/vasuki/VasukiIcon";
+import { useSavedBooks } from "@/lib/hooks/useSavedBooks";
 import type { Book, Page } from "@/lib/types/publication";
 
 interface ReaderContainerProps {
@@ -51,6 +54,10 @@ export function ReaderContainer({
   const [isTocOpen, setIsTocOpen] = useState<boolean>(false);
   const [tocSearch, setTocSearch] = useState<string>("");
   const [flipDirection, setFlipDirection] = useState<"next" | "prev" | null>(null);
+
+  const { isSaved, toggle } = useSavedBooks();
+  const bookSlug = book.slug || book.id;
+  const isBookSaved = isSaved(bookSlug);
 
   // Client-side cache: Map of pageNumber -> Page
   const [pageCache, setPageCache] = useState<Record<number, Page>>(() => {
@@ -428,6 +435,25 @@ export function ReaderContainer({
               </button>
             )}
           </div>
+
+          {/* Bookmark / Save Toggle */}
+          <button
+            onClick={() => toggle(bookSlug)}
+            title={isBookSaved ? "Saved in your browser" : "Save book for later"}
+            aria-label={isBookSaved ? `Remove ${book.title} from saved list` : `Save ${book.title} to saved list`}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-colors cursor-pointer text-xs font-semibold ${
+              isBookSaved
+                ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-400"
+                : "bg-slate-800/60 border-slate-700/50 text-slate-300 hover:text-white hover:bg-slate-800"
+            }`}
+          >
+            {isBookSaved ? (
+              <BookmarkCheck className="w-4 h-4 text-emerald-400" />
+            ) : (
+              <Bookmark className="w-4 h-4" />
+            )}
+            <span className="hidden sm:inline">{isBookSaved ? "Saved" : "Save"}</span>
+          </button>
 
           {/* Table of Contents Drawer Trigger */}
           <button

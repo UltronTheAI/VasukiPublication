@@ -74,9 +74,20 @@ VasukiPublication is the public web presentation and reader application for book
 - `/book/[slug]` — Book Details: Cover view, synopsis, chapter outline, metadata, start reading button, JSON-LD structured data.
 - `/book/[slug]/opengraph-image` — Dynamic 1200x630 social preview generation using `ImageResponse`.
 - `/book/[slug]/read` — Interactive Reader: Isolated A4 page viewer, linked-list page progression, zero ads.
-- `/saved` — Saved Books: Local bookmarks and offline reading queue.
+- `/saved` — Saved Books: Local bookmarks and offline reading queue (anonymous, browser-local).
+- `/api/books/batch` — Batch resolution endpoint for resolving saved slugs into book & cover documents.
+- `/api/books/[slug]/pages` — Paginated page streaming & prefetching endpoint.
 - `/sitemap.xml` — Dynamic SEO sitemap.
 - `/robots.txt` — Search engine crawler instructions.
-- `/api/books` — Public JSON catalog endpoint.
-- `/api/search` — Public search endpoint.
+
+---
+
+## 5. Anonymous Saved Books & Privacy Architecture
+
+- **Zero User Account / Database Requirement**: User state belongs entirely to the local browser via `localStorage` (`vasuki.savedBooks.v1`).
+- **Privacy-First Design**: No server-side syncing of user reading lists, zero fingerprinting, no third-party tracking cookies.
+- **Batch Resolution**: `/saved` queries `/api/books/batch` with local slugs in a single `$in` query rather than $N$ separate network requests.
+- **Multi-Tab Sync**: Uses React 19 `useSyncExternalStore` combined with `storage` and custom `vasuki-saved-books-changed` events.
+- **Stale Cleanups**: Deleted, private, or unpublished books are automatically omitted from output.
+
 

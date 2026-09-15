@@ -209,3 +209,29 @@ export async function getSitemapBooks(): Promise<SitemapEntry[]> {
   }));
 }
 
+/**
+ * Batch retrieve public published books by an array of slugs.
+ * Excludes private/draft/missing books in a single MongoDB query.
+ */
+export async function getPublicBooksBySlugs(slugs: string[]): Promise<Book[]> {
+  if (!slugs || slugs.length === 0) return [];
+  const cleanSlugs = slugs
+    .map((s) => (typeof s === "string" ? s.trim() : ""))
+    .filter(Boolean)
+    .slice(0, 50);
+
+  if (cleanSlugs.length === 0) return [];
+
+  const collection = await getBooksCollection();
+  const docs = await collection
+    .find({
+      slug: { $in: cleanSlugs },
+      "publication.status": "published",
+      "publication.visibility": "public",
+    })
+    .toArray();
+
+  return docs.map((d) => normalizeBookDoc(d as unknown as Record<string, unknown>));
+}
+
+
