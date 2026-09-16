@@ -198,7 +198,7 @@ export function SavedBooksView({ bannerAd, sidebarAd }: SavedBooksViewProps) {
         {/* Sidebar Ad Slot */}
         {sidebarAd && (
           <aside className="lg:col-span-1 space-y-6">
-            <div className="sticky top-20">
+            <div className="lg:sticky lg:top-20">
               <NativeAdSidebar ad={sidebarAd} />
 
               {/* Privacy Badge info */}

@@ -100,11 +100,27 @@ export function CoverPreview({
 
   // Size styling mapping
   const sizeClasses = {
-    sm: "w-28 h-40 text-[9px] p-2.5",
-    md: "w-44 h-64 text-[11px] p-3.5",
-    lg: "w-56 h-80 text-xs p-4.5",
-    hero: "w-64 h-92 sm:w-72 sm:h-104 text-sm p-5",
-    detail: "w-full max-w-[320px] aspect-[1/1.44] text-xs sm:text-sm p-6 shadow-xl",
+    sm: "w-28 h-40 text-[9px]",
+    md: "w-44 h-64 text-[11px]",
+    lg: "w-56 h-80 text-xs",
+    hero: "w-64 h-92 sm:w-72 sm:h-104 text-sm",
+    detail: "w-full max-w-[320px] aspect-[1/1.44] text-xs sm:text-sm shadow-xl",
+  }[size];
+
+  const contentPadding = {
+    sm: "p-2.5",
+    md: "p-3.5",
+    lg: "p-4",
+    hero: "p-4 sm:p-5",
+    detail: "p-5 sm:p-6",
+  }[size];
+
+  const footerPadding = {
+    sm: "px-2.5 py-1.5 text-[8px]",
+    md: "px-3.5 py-2 text-[9px]",
+    lg: "px-4 py-2 text-[9px]",
+    hero: "px-4 py-2.5 sm:px-5 sm:py-3 text-[9px] sm:text-[10px]",
+    detail: "px-5 py-2.5 sm:px-6 sm:py-3 text-[9px] sm:text-[10px]",
   }[size];
 
   return (
@@ -158,41 +174,44 @@ export function CoverPreview({
         </svg>
       </div>
 
-      {/* Top Header Chrome */}
-      <div className="relative z-10 flex items-center justify-between gap-1">
-        <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-bold bg-[#001e2b] text-white border border-white/10 shadow-xs">
-          {categoryBadge}
-        </span>
-        <div className="w-6 h-6 rounded-full bg-emerald-500/15 text-emerald-700 flex items-center justify-center">
-          <HeroIcon iconName={heroIconName} className="w-3.5 h-3.5" />
+      {/* Main Content Area (Header Badge & Floating Card) */}
+      <div className={`relative z-10 flex-1 flex flex-col justify-between ${contentPadding}`}>
+        {/* Top Header Chrome */}
+        <div className="flex items-center justify-between gap-1">
+          <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-bold bg-[#001e2b] text-white border border-white/10 shadow-xs">
+            {categoryBadge}
+          </span>
+          <div className="w-6 h-6 rounded-full bg-emerald-500/15 text-emerald-700 flex items-center justify-center">
+            <HeroIcon iconName={heroIconName} className="w-3.5 h-3.5" />
+          </div>
+        </div>
+
+        {/* Floating Dark Title Card */}
+        <div className="my-auto">
+          <div className="bg-[#001e2b] text-white p-3.5 sm:p-4 rounded-lg border border-white/12 shadow-lg max-w-full text-left">
+            <h3
+              className="font-serif font-bold text-sm sm:text-base md:text-lg leading-tight text-white tracking-tight line-clamp-3"
+              style={{ fontFamily: "var(--font-serif), Georgia, serif" }}
+            >
+              {title}
+            </h3>
+            <div
+              className="w-7 h-0.5 my-1.5 rounded-full"
+              style={{ backgroundColor: accentColor }}
+            />
+            {subtitle && (
+              <p className="opacity-80 font-normal leading-snug line-clamp-2 text-[10px] sm:text-[11px] text-slate-300">
+                {subtitle}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Floating Dark Title Card */}
-      <div className="relative z-10 my-auto">
-        <div className="bg-[#001e2b] text-white p-3.5 sm:p-4 rounded-lg border border-white/12 shadow-lg max-w-full text-left">
-          <h3
-            className="font-serif font-bold text-sm sm:text-base md:text-lg leading-tight text-white tracking-tight line-clamp-3"
-            style={{ fontFamily: "var(--font-serif), Georgia, serif" }}
-          >
-            {title}
-          </h3>
-          <div
-            className="w-7 h-0.5 my-1.5 rounded-full"
-            style={{ backgroundColor: accentColor }}
-          />
-          {subtitle && (
-            <p className="opacity-80 font-normal leading-snug line-clamp-2 text-[10px] sm:text-[11px] text-slate-300">
-              {subtitle}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Bottom Footer Strip */}
-      <div className="relative z-10 -mx-3.5 -mb-3.5 sm:-mx-6 sm:-mb-6 px-3.5 py-2 sm:px-6 sm:py-2.5 bg-[#001e2b] text-white border-t border-white/10 flex items-center justify-between text-[9px] sm:text-[10px]">
+      {/* Bottom Footer Strip (Full width flush with card border and corners) */}
+      <div className={`relative z-10 w-full bg-[#001e2b] text-white border-t border-white/10 flex items-center justify-between shrink-0 ${footerPadding}`}>
         <span className="truncate max-w-[70%] font-bold text-white">{author}</span>
-        <span className="font-mono text-[8px] sm:text-[9px] tracking-wider text-slate-300 uppercase shrink-0">
+        <span className="font-mono tracking-wider text-slate-300 uppercase shrink-0">
           {edition}
         </span>
       </div>

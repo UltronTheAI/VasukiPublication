@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useSavedBooks } from "@/lib/hooks/useSavedBooks";
 import type { Book } from "@/lib/types/publication";
@@ -16,9 +16,14 @@ export function SaveBookButton({
   className = "",
   variant = "button",
 }: SaveBookButtonProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const { isSaved, toggle } = useSavedBooks();
   const bookSlug = book.slug || book.id;
-  const saved = isSaved(bookSlug);
+  const saved = mounted ? isSaved(bookSlug) : false;
 
   function handleToggle(e: React.MouseEvent) {
     e.preventDefault();
@@ -31,6 +36,7 @@ export function SaveBookButton({
       <button
         type="button"
         onClick={handleToggle}
+        suppressHydrationWarning
         aria-label={
           saved
             ? `Remove ${book.title} from saved reading list`
@@ -56,6 +62,7 @@ export function SaveBookButton({
     <button
       type="button"
       onClick={handleToggle}
+      suppressHydrationWarning
       aria-label={
         saved
           ? `Remove ${book.title} from saved reading list`

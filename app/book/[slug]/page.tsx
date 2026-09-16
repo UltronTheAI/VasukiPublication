@@ -203,7 +203,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 sm:gap-14 items-start">
           {/* Left Column: Dynamic Cover & Action Center (4 cols) */}
-          <div className="lg:col-span-4 flex flex-col items-center lg:items-start sticky top-24">
+          <div className="lg:col-span-4 flex flex-col items-center lg:items-start lg:sticky lg:top-24">
             <div className="w-full flex justify-center bg-canvas-soft rounded-2xl p-6 sm:p-8 border border-hairline shadow-xs">
               <CoverPreview
                 book={book}

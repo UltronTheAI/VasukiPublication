@@ -47,9 +47,14 @@ export function ReaderContainer({
   const [isTocOpen, setIsTocOpen] = useState<boolean>(false);
   const [flipDirection, setFlipDirection] = useState<"next" | "prev" | null>(null);
 
+  const [mounted, setMounted] = useState<boolean>(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const { isSaved, toggle } = useSavedBooks();
   const bookSlug = book.slug || book.id;
-  const isBookSaved = isSaved(bookSlug);
+  const isBookSaved = mounted ? isSaved(bookSlug) : false;
 
   // Client-side cache: Map of pageNumber -> Page
   const [pageCache, setPageCache] = useState<Record<number, Page>>(() => {
@@ -367,24 +372,27 @@ export function ReaderContainer({
       suppressHydrationWarning
     >
       {/* =======================================================================
-          1. TOP READER NAVBAR (Polished, Clean Branding & Controls)
+          1. TOP READER NAVBAR (Mobile-Responsive, Clean Branding & Controls)
          ======================================================================= */}
-      <header className="shrink-0 h-16 bg-white/95 border-b border-slate-200 px-4 sm:px-6 lg:px-8 flex items-center justify-between z-30 backdrop-blur-md shadow-xs select-none">
+      <header
+        className="shrink-0 h-14 sm:h-16 bg-white/95 border-b border-slate-200 px-2 sm:px-6 lg:px-8 flex items-center justify-between z-30 backdrop-blur-md shadow-xs select-none gap-1 sm:gap-3"
+        suppressHydrationWarning
+      >
         {/* Left: Overview Back Button & Book Title Branding */}
-        <div className="flex items-center gap-3 min-w-0 max-w-[32%] sm:max-w-[36%]">
+        <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink">
           <Link
             href={`/book/${book.slug}`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold transition-colors shrink-0 cursor-pointer"
+            className="flex items-center gap-1 p-2 sm:px-3 sm:py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold transition-colors shrink-0 cursor-pointer"
             title="Return to book overview"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Overview</span>
           </Link>
 
-          <div className="h-5 w-px bg-slate-200 shrink-0 hidden sm:block" />
+          <div className="h-4 sm:h-5 w-px bg-slate-200 shrink-0 hidden xs:block" />
 
-          <div className="min-w-0">
-            <h1 className="text-sm sm:text-base font-bold text-slate-900 truncate">
+          <div className="min-w-0 hidden xs:block">
+            <h1 className="text-xs sm:text-base font-bold text-slate-900 truncate max-w-[80px] xs:max-w-[130px] sm:max-w-[220px] md:max-w-xs">
               {book.title}
             </h1>
           </div>
@@ -392,17 +400,18 @@ export function ReaderContainer({
 
         {/* Center: Shifted Professional Page Navigation Pill */}
         <div className="flex items-center justify-center shrink-0">
-          <div className="flex items-center bg-slate-100/90 border border-slate-200 rounded-lg p-1 shadow-2xs">
+          <div className="flex items-center bg-slate-100/90 border border-slate-200 rounded-lg p-0.5 sm:p-1 shadow-2xs">
             <button
               onClick={prevPage}
               disabled={currentPage <= 1}
               title="Previous Page (ArrowLeft)"
-              className="p-1.5 rounded-md hover:bg-white text-slate-700 hover:text-slate-900 disabled:opacity-25 disabled:hover:bg-transparent transition-colors cursor-pointer"
+              className="p-1 sm:p-1.5 rounded-md hover:bg-white text-slate-700 hover:text-slate-900 disabled:opacity-25 disabled:hover:bg-transparent transition-colors cursor-pointer"
+              suppressHydrationWarning
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
-            <div className="flex items-center gap-1.5 px-2.5 text-xs font-mono font-medium text-slate-700">
+            <div className="flex items-center gap-1 sm:gap-1.5 px-1 sm:px-2.5 text-[11px] sm:text-xs font-mono font-medium text-slate-700">
               <span className="text-slate-500 hidden sm:inline">Page</span>
               <input
                 type="number"
@@ -415,7 +424,7 @@ export function ReaderContainer({
                     goToPage(val);
                   }
                 }}
-                className="w-11 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center text-xs font-bold text-emerald-700 focus:outline-hidden focus:border-emerald-500 shadow-2xs"
+                className="w-8 sm:w-11 bg-white border border-slate-300 rounded px-1 py-0.5 text-center text-[11px] sm:text-xs font-bold text-emerald-700 focus:outline-hidden focus:border-emerald-500 shadow-2xs"
                 suppressHydrationWarning
               />
               <span className="text-slate-400">/</span>
@@ -426,21 +435,23 @@ export function ReaderContainer({
               onClick={nextPage}
               disabled={currentPage >= totalPages}
               title="Next Page (ArrowRight)"
-              className="p-1.5 rounded-md hover:bg-white text-slate-700 hover:text-slate-900 disabled:opacity-25 disabled:hover:bg-transparent transition-colors cursor-pointer"
+              className="p-1 sm:p-1.5 rounded-md hover:bg-white text-slate-700 hover:text-slate-900 disabled:opacity-25 disabled:hover:bg-transparent transition-colors cursor-pointer"
+              suppressHydrationWarning
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
         </div>
 
-        {/* Right: Separate Zoom Controls, Display Mode, ToC, Bookmark & Fullscreen */}
-        <div className="flex items-center justify-end gap-2 max-w-[32%] sm:max-w-[36%] shrink-0">
-          {/* Zoom Controls Separate */}
+        {/* Right: Actions (Contents, Bookmark, Fullscreen) */}
+        <div className="flex items-center justify-end gap-1 sm:gap-2 shrink-0">
+          {/* Zoom Controls (Desktop only) */}
           <div className="hidden md:flex items-center bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-xs shadow-2xs">
             <button
               onClick={() => setZoomLevel((z) => Math.max(70, z - 10))}
               title="Zoom Out"
               className="p-1.5 rounded hover:bg-white text-slate-700 hover:text-slate-900 transition-colors cursor-pointer"
+              suppressHydrationWarning
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
@@ -451,16 +462,18 @@ export function ReaderContainer({
               onClick={() => setZoomLevel((z) => Math.min(130, z + 10))}
               title="Zoom In"
               className="p-1.5 rounded hover:bg-white text-slate-700 hover:text-slate-900 transition-colors cursor-pointer"
+              suppressHydrationWarning
             >
               <ZoomIn className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {/* Two-Page Spread View Toggle (Desktop only) */}
+          {/* Two-Page Spread View Toggle (Large screens only) */}
           <button
             onClick={() => setSpreadMode(!spreadMode)}
             title={spreadMode ? "Switch to Single Page View" : "Switch to Two-Page Spread View"}
             className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold transition-colors cursor-pointer"
+            suppressHydrationWarning
           >
             {spreadMode ? (
               <>
@@ -479,10 +492,11 @@ export function ReaderContainer({
           <button
             onClick={() => setIsTocOpen(true)}
             title="Table of Contents"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold transition-colors cursor-pointer"
+            className="flex items-center gap-1 p-2 sm:px-3 sm:py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold transition-colors cursor-pointer"
+            suppressHydrationWarning
           >
-            <List className="w-4 h-4 text-emerald-600" />
-            <span className="hidden sm:inline">Contents</span>
+            <List className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
+            <span className="hidden md:inline">Contents</span>
           </button>
 
           {/* Bookmark / Save Button */}
@@ -490,16 +504,17 @@ export function ReaderContainer({
             onClick={() => toggle(bookSlug)}
             title={isBookSaved ? "Saved in your browser" : "Save book for later"}
             aria-label={isBookSaved ? `Remove ${book.title} from saved list` : `Save ${book.title} to saved list`}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors cursor-pointer ${
+            className={`flex items-center gap-1 p-2 sm:px-3 sm:py-1.5 rounded-lg border text-xs font-semibold transition-colors cursor-pointer ${
               isBookSaved
                 ? "bg-emerald-50 border-emerald-300 text-emerald-700"
                 : "bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-200"
             }`}
+            suppressHydrationWarning
           >
             {isBookSaved ? (
-              <BookmarkCheck className="w-4 h-4 text-emerald-600" />
+              <BookmarkCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
             ) : (
-              <Bookmark className="w-4 h-4 text-slate-600" />
+              <Bookmark className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600" />
             )}
             <span className="hidden xl:inline">{isBookSaved ? "Saved" : "Save"}</span>
           </button>
@@ -509,8 +524,9 @@ export function ReaderContainer({
             onClick={toggleFullscreen}
             title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
             className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 transition-colors cursor-pointer"
+            suppressHydrationWarning
           >
-            {isFullscreen ? <Minimize className="w-4 h-4 text-emerald-600" /> : <Maximize className="w-4 h-4" />}
+            {isFullscreen ? <Minimize className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" /> : <Maximize className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
           </button>
         </div>
       </header>
@@ -518,22 +534,22 @@ export function ReaderContainer({
       {/* =======================================================================
           2. MAIN CANVAS VIEWPORT (A4 Book Page Display)
          ======================================================================= */}
-      <main className="flex-1 relative flex items-center justify-center p-3 sm:p-6 overflow-hidden w-full h-full min-h-0">
-        {/* Previous Page Clickable Edge / Button */}
+      <main className="flex-1 relative flex items-center justify-center p-1.5 sm:p-4 md:p-6 overflow-hidden w-full h-full min-h-0">
+        {/* Previous Page Floating Button (Visible on tablet/desktop) */}
         <button
           onClick={prevPage}
           disabled={currentPage <= 1}
           title="Previous Page (ArrowLeft)"
-          className={`absolute left-3 md:left-6 z-20 p-3 rounded-full bg-white/95 border border-slate-200 text-slate-700 hover:text-slate-950 hover:bg-white hover:scale-105 transition-all shadow-md cursor-pointer ${
+          className={`hidden sm:flex absolute left-2 md:left-6 z-20 p-3 rounded-full bg-white/95 border border-slate-200 text-slate-700 hover:text-slate-950 hover:bg-white hover:scale-105 transition-all shadow-md cursor-pointer ${
             currentPage <= 1 ? "opacity-20 pointer-events-none" : "opacity-90 hover:opacity-100"
           }`}
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-5 h-5" />
         </button>
 
         {/* Book Canvas Container */}
         <div
-          className={`flex items-center justify-center gap-5 transition-transform duration-200 w-full h-full max-h-[calc(100vh-84px)] ${
+          className={`flex items-center justify-center gap-4 transition-transform duration-200 w-full h-full max-w-full max-h-full ${
             flipDirection === "next"
               ? "vasuki-flip-enter vasuki-flip-enter-active"
               : flipDirection === "prev"
@@ -543,7 +559,7 @@ export function ReaderContainer({
           style={{ transform: `scale(${zoomLevel / 100})` }}
         >
           {/* Left Page Slot */}
-          <div className="h-full max-h-[calc(100vh-84px)] aspect-[210/297] flex items-center justify-center min-w-0 shrink-0">
+          <div className="h-full w-auto max-w-[calc(100vw-0.75rem)] sm:max-w-full max-h-[calc(100dvh-4.25rem)] aspect-[210/297] flex items-center justify-center min-w-0 min-h-0 shrink">
             {leftPageData ? (
               <VasukiBookPage
                 page={leftPageData}
@@ -561,7 +577,7 @@ export function ReaderContainer({
 
           {/* Right Page Slot (Spread mode only when not on Cover or standalone last page) */}
           {rightPageData && (
-            <div className="h-full max-h-[calc(100vh-84px)] aspect-[210/297] flex items-center justify-center min-w-0 shrink-0">
+            <div className="h-full w-auto max-w-full max-h-[calc(100dvh-4.25rem)] aspect-[210/297] flex items-center justify-center min-w-0 min-h-0 shrink">
               <VasukiBookPage
                 page={rightPageData}
                 book={book}
@@ -570,16 +586,16 @@ export function ReaderContainer({
           )}
         </div>
 
-        {/* Next Page Clickable Edge / Button */}
+        {/* Next Page Floating Button (Visible on tablet/desktop) */}
         <button
           onClick={nextPage}
           disabled={currentPage >= totalPages}
           title="Next Page (ArrowRight)"
-          className={`absolute right-3 md:right-6 z-20 p-3 rounded-full bg-white/95 border border-slate-200 text-slate-700 hover:text-slate-950 hover:bg-white hover:scale-105 transition-all shadow-md cursor-pointer ${
+          className={`hidden sm:flex absolute right-2 md:right-6 z-20 p-3 rounded-full bg-white/95 border border-slate-200 text-slate-700 hover:text-slate-950 hover:bg-white hover:scale-105 transition-all shadow-md cursor-pointer ${
             currentPage >= totalPages ? "opacity-20 pointer-events-none" : "opacity-90 hover:opacity-100"
           }`}
         >
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-5 h-5" />
         </button>
       </main>
 
