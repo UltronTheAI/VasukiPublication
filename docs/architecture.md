@@ -71,12 +71,15 @@ VasukiPublication is the public web presentation and reader application for book
 ---
 
 ## 4. Route Hierarchy
-
+ 
 - `/` — Homepage: Hero, Featured Showcase (pinned 1..5), Recent Publications, Category Browse, Native Banner Ads.
+- `/opengraph-image` — Dynamic 1200x630 root social preview generation using `ImageResponse`.
 - `/book/[slug]` — Book Details: Cover view, synopsis, chapter outline, metadata, start reading button, JSON-LD structured data.
-- `/book/[slug]/opengraph-image` — Dynamic 1200x630 social preview generation using `ImageResponse`.
-- `/book/[slug]/read` — Interactive Reader: Isolated A4 page viewer, linked-list page progression, zero ads.
+- `/book/[slug]/opengraph-image` — Dynamic 1200x630 book social preview generation using `ImageResponse`.
+- `/book/[slug]/read` — Interactive Reader: Isolated A4 page viewer, single-page & spread modes, simplified ToC, zero ads.
 - `/saved` — Saved Books: Local bookmarks and offline reading queue (anonymous, browser-local).
+- `/privacy` — Privacy Policy: Complete platform data handling, anonymous reading, and ad metrics disclosures.
+- `/terms` — Terms of Service: Public reading terms, acceptable use, and commercial source license boundary.
 - `/admin` — Private Admin Overview: Dashboard statistics, publication counts, pinned rankings, ad summary.
 - `/admin/login` — Single-Administrator Login: Token entry with brute-force rate limiting.
 - `/admin/books` — Publications Directory: Search, status/visibility filters, quick hero pinning, pagination.

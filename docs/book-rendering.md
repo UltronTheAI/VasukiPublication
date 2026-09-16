@@ -66,29 +66,30 @@ The website shell and the book reader utilize separate, isolated design language
 ---
 
 ## 5. A4 Geometry & Responsive Modes
-
+ 
 Every book page adheres to standard A4 proportions (Width to Height ratio of $210 / 297 \approx 0.7071$):
-
-- **Desktop (Spread Mode)**: On wide screens ($\ge 1200\text{px}$), the reader displays a two-page spread view (Left and Right page). Users can toggle between 2-page spread and single-page view.
-- **Mobile & Tablet**: Scales proportionally to viewport width while preserving inner block padding and aspect ratio.
-- **Zoom Controls**: Users can zoom between $70\%$ and $130\%$ with reset capability.
+ 
+- **Desktop (Spread Mode)**: On wide screens ($\ge 1280\text{px}$ / `xl`), the reader displays a two-page spread view (Left and Right page). Users can toggle between 2-page spread and single-page view.
+- **Mobile & Tablet ($< 1280\text{px}$)**: Enforces a streamlined single-page view with comfortable viewport padding and scrollbar spacing, automatically scaling to match any device width without clipping.
+- **Zoom Controls**: Users on desktop can zoom between $70\%$ and $130\%$ with instant reset capability.
 - **Fullscreen Mode**: Clean focus mode utilizing the browser Fullscreen API with obvious exit controls (`Esc` or toolbar button).
-
+- **Header Branding**: Top reader toolbar includes a direct link with the official `Vasuki.png` logo beside the "Overview" back button.
+ 
 ---
-
+ 
 ## 6. Icon Compatibility & Lucide Mapping
-
+ 
 Persisted VasukiSquare icon names (kebab-case, snake_case, or lowercase) are dynamically resolved via `lib/vasuki/icon-map.ts` and rendered safely using `<VasukiIcon />`:
-
+ 
 - **Supported Aliases**: `book-open`, `bookmark`, `file-text`, `file-code`, `layers`, `cpu`, `database`, `server`, `sparkles`, `compass`, `globe`, `code`, `code-2`, `braces`, `terminal`, `square-terminal`, `check-circle`, `check`, `x`, `shield-check`, `shield`, `lock`, `zap`, `activity`, `gauge`, `network`, `workflow`, `lightbulb`, `alert-triangle`, `alert-circle`, `info`, `heart`, etc.
 - **Safe Fallback**: Unknown icons deterministically fall back to `Sparkles` or `BookOpen`—preventing broken SVG markup or runtime exceptions.
-
+ 
 ---
-
+ 
 ## 7. Navigation & Keyboard Controls
-
+ 
 The reader provides intuitive multi-modal navigation:
-
+ 
 - **Buttons & Edges**: Left/Right chevron edge buttons on the canvas.
 - **Keyboard Shortcuts**:
   - `ArrowLeft` / `PageUp`: Previous page
@@ -98,7 +99,10 @@ The reader provides intuitive multi-modal navigation:
   - `Escape`: Close ToC drawer or exit fullscreen
 - **Touch Swipe**: Swipe left/right gestures for touch screens.
 - **Interactive Scrubber**: Direct-scrub visual progress bar at the bottom.
-- **Table of Contents**: Slide-over drawer with search filtering, chapter badges, and instant jump links.
+- **Simplified Table of Contents**:
+  - Slide-over drawer with clean, distraction-free chapter listings (chapter title and single-line page number indicator).
+  - Exact chapter jump navigation directly to the chapter's start page.
+  - Synchronized active chapter glow tracking matching the reader's current page.
 
 ---
 

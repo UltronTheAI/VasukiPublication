@@ -39,13 +39,18 @@ Unlike traditional publishing websites that force users to download static PDF f
 
 ## Key Features
 
+- **Official Brand Identity & Vector Scenery**:
+  - Transparent blackish vector logo (`public/Vasuki.png`) integrated across website chrome (navbar header, footer), cover previews, reader toolbar, metadata icons, and dynamic OpenGraph social banners.
+  - Direct navbar link to the official engine repository: [`https://github.com/UltronTheAI/VasukiSquare`](https://github.com/UltronTheAI/VasukiSquare).
 - **Zero-PDF Native Web Reader (`/book/[slug]/read`)**:
   - Reconstructs publications directly from structured MongoDB page blocks into responsive, pixel-accurate A4 DOM pages (1:1.414 aspect ratio).
-  - Linked-list page progression, progressive prefetching, full keyboard navigation (left/right arrow keys), and spread view mode.
+  - Linked-list page progression, progressive prefetching, full keyboard navigation (left/right arrow keys), and spread view mode ($\ge 1280\text{px}$).
+  - Enforces streamlined single-page view on mobile/tablet viewports ($< 1280\text{px}$) with comfortable aspect-ratio margins and scrollbar padding.
+  - Simplified, distraction-free Table of Contents with direct chapter jump links, active chapter glow tracking, and single-line page counters.
   - **Zero Ads Rule**: Advertisements are strictly prohibited inside the book reader container.
 - **Public Book Discovery & Catalog (`/`)**:
   - URL-driven search (`?q=...`) and pagination (`?page=...`).
-  - Featured publication showcase supporting up to 5 pinned books sorted by editorial priority.
+  - Featured publication showcase supporting up to 5 pinned books with corner-flush bottom palettes.
   - Responsive book cards with dynamic cover previews, synopses, author attribution, and reading times.
 - **Book Detail Experience (`/book/[slug]`)**:
   - Complete chapter hierarchy, table of contents, and topic metadata.
@@ -61,7 +66,9 @@ Unlike traditional publishing websites that force users to download static PDF f
 - **Native Advertisements Model (`/admin/ads`)**:
   - Restrained native sponsor cards in website discovery spaces (`home_banner`, `home_sidebar`, `saved_banner`, `saved_sidebar`).
   - Priority-weighted rotation (P1: 10, P2: 5, P3: 2), safe outbound confirmation modals, and anonymous impression/click counters.
-- **Production SEO & Security**:
+- **Production SEO & Comprehensive OpenGraph Coverage**:
+  - Dynamic OpenGraph (1200x630) and Twitter image cards across all platform routes (`/`, `/book/[slug]`, `/book/[slug]/read`, `/saved`, `/terms`, `/privacy`).
+  - Native browser favicon and mobile touch icons referencing `/Vasuki.png`.
   - Dynamic sitemap (`/sitemap.xml`) and robots exclusion rules (`/robots.txt`).
   - Production security headers: Content-Security-Policy, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy.
   - Legal compliance pages for Privacy Policy (`/privacy`) and Terms of Service (`/terms`).

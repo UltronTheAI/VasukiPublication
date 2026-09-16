@@ -94,9 +94,17 @@ Every public book detail page (`/book/[slug]`) injects valid Schema.org `Book` s
 
 ---
 
-## 5. Dynamic OpenGraph Social Previews (`/book/[slug]/opengraph-image`)
-
-Each publication includes dynamic edge-rendered 1200x630 OpenGraph cards using Next.js `ImageResponse` from `next/og`:
-- Reconstructs cover artwork palettes, typography, chapter count, and reading time badges dynamically.
-- Delivers crisp social cards for Twitter, Discord, Slack, and LinkedIn shares.
+## 5. Dynamic OpenGraph Social Previews & Metadata Coverage
+ 
+VasukiPublication implements comprehensive, dynamic OpenGraph (1200x630) and Twitter Card metadata across every public route:
+ 
+- **Root & Static Routes (`/`, `/terms`, `/privacy`, `/saved`)**:
+  - Dynamically generated via `app/opengraph-image.tsx` with ambient gradients and official `Vasuki.png` logo rendering.
+- **Book Details & Reader (`/book/[slug]`, `/book/[slug]/read`)**:
+  - Dynamically generated via `app/book/[slug]/opengraph-image.tsx` using Next.js `ImageResponse` from `next/og`.
+  - Reconstructs cover artwork palettes, typography, category badge, and official `Vasuki.png` logo branding dynamically.
+- **Icons & Favicons**:
+  - Root layout metadata defines `icon`, `shortcut`, and `apple` touch icons referencing `/Vasuki.png`.
+- **Social Sharing**:
+  - Delivers crisp, perfectly formatted previews for Twitter, Discord, Slack, LinkedIn, and Facebook.
 
