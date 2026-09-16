@@ -18,10 +18,10 @@ Configure the following environment variables in **Vercel Project Settings > Env
 
 | Variable | Scope | Required | Description | Production Example |
 | :--- | :--- | :--- | :--- | :--- |
-| `MONGODB_URI` | Server (Production, Preview) | **Yes** | MongoDB connection string | `mongodb+srv://vasuki_user:SECRET_PASS@cluster0.mongodb.net/?retryWrites=true&w=majority` |
+| `MONGODB_URI` | Server (Production, Preview) | **Yes** | MongoDB connection string | `mongodb+srv://<username>:<password>@<cluster-address>/...` |
 | `MONGODB_DATABASE` | Server (Production, Preview) | **Yes** | Shared database name | `vasukisquare` |
-| `ADMIN_ACCESS_TOKEN` | Server (Production) | **Yes** | Secret access token for `/admin/login` | `vasuki_adm_9f82b7c4a1e938210f92b7...` |
-| `ADMIN_SESSION_SECRET` | Server (Production) | **Yes** | 32+ char secret for signing HMAC-SHA256 session cookies | `k9J#mP2$vL9@xQ5!zR8^wT1*bC4&yN7%` |
+| `ADMIN_ACCESS_TOKEN` | Server (Production) | **Yes** | Secret access token for `/admin/login` | `<your_secure_admin_token>` |
+| `ADMIN_SESSION_SECRET` | Server (Production) | **Yes** | 32+ char secret for signing HMAC-SHA256 session cookies | `<your_32_character_random_secret>` |
 | `NEXT_PUBLIC_SITE_URL` | Client & Server | **Yes** | Canonical production domain without trailing slash | `https://vasukipublication.com` |
 | `NEXT_PUBLIC_SITE_NAME` | Client & Server | **Yes** | Website branding display name | `Vasuki Publication` |
 | `NODE_ENV` | System | **Yes** | Application environment | `production` |
