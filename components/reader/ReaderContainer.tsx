@@ -324,13 +324,6 @@ export function ReaderContainer({
   const leftPageData = pageCache[effectiveLeftPageNum];
   const rightPageData = effectiveRightPageNum ? pageCache[effectiveRightPageNum] : null;
 
-  // Determine current chapter title from chapters array or page data
-  const currentChapter = book.chapters?.find(
-    (ch) =>
-      leftPageData?.chapter_number === ch.chapter_number ||
-      (ch.page_count && currentPage >= ch.chapter_number * 2)
-  );
-
   const filteredChapters = (book.chapters || []).filter(
     (ch) =>
       !tocSearch ||
@@ -347,7 +340,7 @@ export function ReaderContainer({
       suppressHydrationWarning
     >
       {/* =======================================================================
-          1. TOP READER NAVBAR (Polished, Professional, Generous Height & Padding)
+          1. TOP READER NAVBAR (Polished, Clean Branding & Controls)
          ======================================================================= */}
       <header className="shrink-0 h-16 bg-white/95 border-b border-slate-200 px-4 sm:px-6 lg:px-8 flex items-center justify-between z-30 backdrop-blur-md shadow-xs select-none">
         {/* Left: Overview Back Button & Book Title Branding */}
@@ -364,14 +357,9 @@ export function ReaderContainer({
           <div className="h-5 w-px bg-slate-200 shrink-0 hidden sm:block" />
 
           <div className="min-w-0">
-            <h1 className="text-sm font-bold text-slate-900 truncate">
+            <h1 className="text-sm sm:text-base font-bold text-slate-900 truncate">
               {book.title}
             </h1>
-            {currentChapter && (
-              <p className="text-[11px] text-emerald-700 font-medium truncate hidden md:block">
-                Chapter {currentChapter.chapter_number}: {currentChapter.title}
-              </p>
-            )}
           </div>
         </div>
 
