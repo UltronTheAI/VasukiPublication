@@ -196,7 +196,7 @@
   min-height: 0 !important;
   max-height: 100% !important;
   aspect-ratio: 210 / 297 !important;
-  padding: 24px 20px !important;
+  padding: 28px 24px !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
   border-radius: 4px !important;
   border: 1px solid var(--theme-border, #e1e5e8) !important;
@@ -261,11 +261,21 @@
   overflow-y: auto !important;
   overflow-x: hidden !important;
   box-sizing: border-box !important;
+  padding: 6px 4px 16px 4px !important;
 }
 
 @media (min-width: 768px) {
   .vasuki-book-root .page {
-    padding: 30px 26px !important;
+    padding: 38px 32px !important;
+  }
+  .vasuki-book-root .page.layout-cover {
+    padding: 0 !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .vasuki-book-root .page {
+    padding: 44px 38px !important;
   }
   .vasuki-book-root .page.layout-cover {
     padding: 0 !important;
