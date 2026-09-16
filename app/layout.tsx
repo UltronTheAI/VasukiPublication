@@ -89,9 +89,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${plusJakartaSans.variable} ${inter.variable} ${jetbrainsMono.variable} ${newsreader.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white text-ink font-sans selection:bg-ink selection:text-white">
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-white text-ink font-sans selection:bg-ink selection:text-white">
         <SiteHeader />
         <main className="flex-1 w-full">{children}</main>
         <SiteFooter />

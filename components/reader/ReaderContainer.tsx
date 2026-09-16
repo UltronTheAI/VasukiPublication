@@ -314,9 +314,7 @@ export function ReaderContainer({
   return (
     <div
       ref={readerRef}
-      className={`relative w-full min-h-screen flex flex-col bg-slate-100/90 text-slate-900 select-none overflow-hidden ${
-        isFullscreen ? "h-screen" : "min-h-[calc(100vh-64px)]"
-      }`}
+      className="fixed inset-0 z-50 w-screen h-screen flex flex-col bg-slate-100 text-slate-900 select-none overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -479,7 +477,7 @@ export function ReaderContainer({
       {/* =======================================================================
           2. MAIN CANVAS VIEWPORT (A4 Book Page Display)
          ======================================================================= */}
-      <main className="flex-1 relative flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-hidden">
+      <main className="flex-1 relative flex items-center justify-center p-2 sm:p-4 overflow-hidden w-full h-full min-h-0">
         {/* Previous Page Clickable Edge / Button */}
         <button
           onClick={prevPage}
@@ -494,7 +492,7 @@ export function ReaderContainer({
 
         {/* Book Canvas Container */}
         <div
-          className={`flex items-center justify-center gap-4 transition-transform duration-200 w-full max-w-6xl h-full max-h-[88vh] ${
+          className={`flex items-center justify-center gap-4 transition-transform duration-200 w-full h-full max-h-[calc(100vh-125px)] ${
             flipDirection === "next"
               ? "vasuki-flip-enter vasuki-flip-enter-active"
               : flipDirection === "prev"
@@ -504,7 +502,7 @@ export function ReaderContainer({
           style={{ transform: `scale(${zoomLevel / 100})` }}
         >
           {/* Left / Single Page Slot */}
-          <div className="flex-1 max-w-[560px] h-full flex items-center justify-center">
+          <div className="h-full max-h-[calc(100vh-125px)] aspect-[210/297] flex items-center justify-center min-w-0 shrink-0">
             {leftPageData ? (
               <VasukiBookPage
                 page={leftPageData}
@@ -513,7 +511,7 @@ export function ReaderContainer({
               />
             ) : (
               <div className="vasuki-book-root w-full h-full flex items-center justify-center">
-                <div className="vasuki-page-canvas bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm">
+                <div className="vasuki-page-canvas bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm w-full h-full aspect-[210/297]">
                   <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mb-3" />
                   <p className="text-xs font-mono">Loading Page {currentPage}...</p>
                 </div>
@@ -523,7 +521,7 @@ export function ReaderContainer({
 
           {/* Right Page Slot (Spread mode only) */}
           {spreadMode && currentPage + 1 <= totalPages && (
-            <div className="flex-1 max-w-[560px] h-full flex items-center justify-center">
+            <div className="h-full max-h-[calc(100vh-125px)] aspect-[210/297] flex items-center justify-center min-w-0 shrink-0">
               {rightPageData ? (
                 <VasukiBookPage
                   page={rightPageData}
@@ -532,7 +530,7 @@ export function ReaderContainer({
                 />
               ) : (
                 <div className="vasuki-book-root w-full h-full flex items-center justify-center">
-                  <div className="vasuki-page-canvas bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm">
+                  <div className="vasuki-page-canvas bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm w-full h-full aspect-[210/297]">
                     <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mb-3" />
                     <p className="text-xs font-mono">Loading Page {currentPage + 1}...</p>
                   </div>
