@@ -81,11 +81,15 @@ export function ReaderContainer({
   // ---------------------------------------------------------------------------
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1200) {
+      if (window.innerWidth >= 1280) {
         setSpreadMode(true);
+      } else {
+        setSpreadMode(false);
       }
     };
     handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // ---------------------------------------------------------------------------
@@ -103,21 +107,24 @@ export function ReaderContainer({
   // ---------------------------------------------------------------------------
   // Compute Current Left & Right Pages
   // Rule:
+  // - On mobile (<1280px): Strictly single page
   // - Page 1 is ALWAYS single (Cover)
   // - Last page is single if standalone
-  // - Inside pages show as facing pair (Even on left, Odd on right)
+  // - Inside pages show as facing pair on large desktop (Even on left, Odd on right)
   // ---------------------------------------------------------------------------
   const isCoverPage = currentPage === 1;
+  const isEffectiveSpread = spreadMode && typeof window !== "undefined" && window.innerWidth >= 1280;
+
   const effectiveLeftPageNum = isCoverPage
     ? 1
-    : spreadMode
+    : isEffectiveSpread
     ? currentPage % 2 === 0
       ? currentPage
       : currentPage - 1
     : currentPage;
 
   const effectiveRightPageNum =
-    spreadMode && !isCoverPage && effectiveLeftPageNum + 1 <= totalPages
+    isEffectiveSpread && !isCoverPage && effectiveLeftPageNum + 1 <= totalPages
       ? effectiveLeftPageNum + 1
       : null;
 
@@ -213,7 +220,8 @@ export function ReaderContainer({
 
   const prevPage = useCallback(() => {
     if (currentPage <= 1) return;
-    if (!spreadMode) {
+    const isSpread = spreadMode && typeof window !== "undefined" && window.innerWidth >= 1280;
+    if (!isSpread) {
       goToPage(currentPage - 1);
     } else {
       if (currentPage <= 2) {
@@ -227,7 +235,8 @@ export function ReaderContainer({
 
   const nextPage = useCallback(() => {
     if (currentPage >= totalPages) return;
-    if (!spreadMode) {
+    const isSpread = spreadMode && typeof window !== "undefined" && window.innerWidth >= 1280;
+    if (!isSpread) {
       goToPage(currentPage + 1);
     } else {
       if (currentPage === 1) {
@@ -534,7 +543,7 @@ export function ReaderContainer({
       {/* =======================================================================
           2. MAIN CANVAS VIEWPORT (A4 Book Page Display)
          ======================================================================= */}
-      <main className="flex-1 relative flex items-center justify-center p-1.5 sm:p-4 md:p-6 overflow-hidden w-full h-full min-h-0">
+      <main className="flex-1 relative flex items-center justify-center p-3 sm:p-5 md:p-6 overflow-hidden w-full h-full min-h-0">
         {/* Previous Page Floating Button (Visible on tablet/desktop) */}
         <button
           onClick={prevPage}
@@ -543,6 +552,7 @@ export function ReaderContainer({
           className={`hidden sm:flex absolute left-2 md:left-6 z-20 p-3 rounded-full bg-white/95 border border-slate-200 text-slate-700 hover:text-slate-950 hover:bg-white hover:scale-105 transition-all shadow-md cursor-pointer ${
             currentPage <= 1 ? "opacity-20 pointer-events-none" : "opacity-90 hover:opacity-100"
           }`}
+          suppressHydrationWarning
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
@@ -559,7 +569,7 @@ export function ReaderContainer({
           style={{ transform: `scale(${zoomLevel / 100})` }}
         >
           {/* Left Page Slot */}
-          <div className="h-full w-auto max-w-[calc(100vw-0.75rem)] sm:max-w-full max-h-[calc(100dvh-4.25rem)] aspect-[210/297] flex items-center justify-center min-w-0 min-h-0 shrink">
+          <div className="h-full w-auto max-w-[calc(100vw-1.75rem)] sm:max-w-full max-h-[calc(100dvh-5.5rem)] aspect-[210/297] flex items-center justify-center min-w-0 min-h-0 shrink drop-shadow-md">
             {leftPageData ? (
               <VasukiBookPage
                 page={leftPageData}
@@ -575,9 +585,9 @@ export function ReaderContainer({
             )}
           </div>
 
-          {/* Right Page Slot (Spread mode only when not on Cover or standalone last page) */}
+          {/* Right Page Slot (Spread mode only on large screens when not on Cover or standalone last page) */}
           {rightPageData && (
-            <div className="h-full w-auto max-w-full max-h-[calc(100dvh-4.25rem)] aspect-[210/297] flex items-center justify-center min-w-0 min-h-0 shrink">
+            <div className="hidden xl:flex h-full w-auto max-w-full max-h-[calc(100dvh-5.5rem)] aspect-[210/297] items-center justify-center min-w-0 min-h-0 shrink drop-shadow-md">
               <VasukiBookPage
                 page={rightPageData}
                 book={book}
@@ -594,6 +604,7 @@ export function ReaderContainer({
           className={`hidden sm:flex absolute right-2 md:right-6 z-20 p-3 rounded-full bg-white/95 border border-slate-200 text-slate-700 hover:text-slate-950 hover:bg-white hover:scale-105 transition-all shadow-md cursor-pointer ${
             currentPage >= totalPages ? "opacity-20 pointer-events-none" : "opacity-90 hover:opacity-100"
           }`}
+          suppressHydrationWarning
         >
           <ChevronRight className="w-5 h-5" />
         </button>
