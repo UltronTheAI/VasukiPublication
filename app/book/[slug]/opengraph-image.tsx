@@ -26,15 +26,58 @@ export default async function Image({
             width: "100%",
             height: "100%",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: "#001e2b",
-            color: "#ffffff",
-            fontSize: 48,
-            fontWeight: "bold",
+            backgroundColor: "#f8fafc",
+            color: "#0f172a",
+            fontFamily: "sans-serif",
+            padding: 48,
           }}
         >
-          Vasuki Publication — Book Not Found
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#ecfdf5",
+              border: "1px solid #a7f3d0",
+              borderRadius: 9999,
+              padding: "8px 20px",
+              marginBottom: 20,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 14,
+                fontWeight: "bold",
+                color: "#047857",
+                letterSpacing: 2,
+              }}
+            >
+              VASUKI PUBLICATION
+            </span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              fontSize: 38,
+              fontWeight: 800,
+              color: "#0f172a",
+              marginBottom: 12,
+            }}
+          >
+            Publication Not Found
+          </div>
+          <div
+            style={{
+              display: "flex",
+              fontSize: 18,
+              color: "#64748b",
+            }}
+          >
+            The requested technical book is not available in the public catalog.
+          </div>
         </div>
       ),
       { ...size }
@@ -44,13 +87,16 @@ export default async function Image({
   const cover = await getCoverForBook(book.id || book._id || "");
   const design = (cover?.design || {}) as CoverDesignPlan;
 
-  const title = book.title;
-  const subtitle = book.subtitle || book.description || "";
-  const category = book.category || book.discovery?.category || "TECHNICAL HANDBOOK";
-  const author = book.author || "VasukiSquare Editorial";
+  const title = book.title || book.seo?.title || "Technical Publication";
+  const subtitle = book.subtitle || book.seo?.description || book.description || "";
+  const category = (book.category || book.discovery?.category || "TECHNICAL HANDBOOK").toUpperCase();
+  const author = book.author || cover?.author || "VasukiSquare Editorial";
   const pageCount = book.page_count || 0;
-  const accentColor = design.accent_color || "#00ed64";
-  const bgColor = design.background_color || "#001e2b";
+  const accentColor = design.accent_color || "#059669";
+
+  // Dynamic title size calculation to prevent overflow
+  const titleFontSize = title.length > 55 ? 32 : title.length > 35 ? 38 : 44;
+  const coverTitleFontSize = title.length > 50 ? 20 : title.length > 30 ? 23 : 26;
 
   return new ImageResponse(
     (
@@ -60,43 +106,55 @@ export default async function Image({
           height: "100%",
           display: "flex",
           flexDirection: "row",
-          backgroundColor: "#001e2b",
-          color: "#ffffff",
+          alignItems: "center",
+          backgroundColor: "#f8fafc",
+          color: "#0f172a",
           padding: 56,
           fontFamily: "sans-serif",
           position: "relative",
-          overflow: "hidden",
         }}
       >
-        {/* Background ambient radial glow */}
+        {/* Subtle background ambient gradient accent */}
         <div
           style={{
             position: "absolute",
-            top: -100,
+            top: -120,
             right: -100,
-            width: 500,
-            height: 500,
+            width: 550,
+            height: 550,
             borderRadius: "50%",
-            backgroundColor: accentColor,
-            opacity: 0.15,
-            filter: "blur(80px)",
+            backgroundColor: "#ecfdf5",
+            opacity: 0.9,
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: -150,
+            left: -100,
+            width: 450,
+            height: 450,
+            borderRadius: "50%",
+            backgroundColor: "#f1f5f9",
+            opacity: 0.8,
           }}
         />
 
-        {/* Left: Reconstructed Book Cover Mini View */}
+        {/* Left: Reconstructed Light Book Cover Mini View */}
         <div
           style={{
-            width: 340,
-            height: 490,
-            backgroundColor: bgColor,
+            width: 330,
+            height: 480,
+            backgroundColor: "#ffffff",
             borderRadius: 16,
-            border: `2px solid ${accentColor}40`,
-            padding: 28,
+            border: "1.5px solid #e2e8f0",
+            padding: 26,
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.7)",
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04)",
             position: "relative",
+            flexShrink: 0,
           }}
         >
           {/* Top category in cover */}
@@ -104,27 +162,36 @@ export default async function Image({
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
             }}
           >
-            <span
+            <div
               style={{
-                fontSize: 13,
-                fontWeight: "bold",
-                color: accentColor,
-                textTransform: "uppercase",
-                letterSpacing: 2,
+                backgroundColor: "#ecfdf5",
+                border: "1px solid #a7f3d0",
+                padding: "4px 10px",
+                borderRadius: 6,
+                display: "flex",
               }}
             >
-              {category}
-            </span>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#047857",
+                  letterSpacing: 1.5,
+                }}
+              >
+                {category}
+              </span>
+            </div>
           </div>
 
-          {/* Title in cover */}
+          {/* Title block in cover */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
+              margin: "auto 0",
             }}
           >
             <div
@@ -132,36 +199,55 @@ export default async function Image({
                 width: 36,
                 height: 4,
                 backgroundColor: accentColor,
-                marginBottom: 16,
+                marginBottom: 14,
                 borderRadius: 2,
+                display: "flex",
               }}
             />
-            <h2
+            <div
               style={{
-                fontSize: 26,
-                fontWeight: "bold",
+                display: "flex",
+                fontSize: coverTitleFontSize,
+                fontWeight: 800,
                 lineHeight: 1.25,
-                color: "#ffffff",
-                margin: 0,
+                color: "#0f172a",
+                letterSpacing: -0.5,
               }}
             >
               {title}
-            </h2>
+            </div>
+            {book.subtitle ? (
+              <div
+                style={{
+                  display: "flex",
+                  fontSize: 13,
+                  color: "#64748b",
+                  marginTop: 8,
+                  lineHeight: 1.35,
+                }}
+              >
+                {book.subtitle.length > 60 ? `${book.subtitle.slice(0, 60)}...` : book.subtitle}
+              </div>
+            ) : null}
           </div>
 
           {/* Footer in cover */}
           <div
             style={{
               display: "flex",
+              flexDirection: "row",
               justifyContent: "space-between",
-              borderTop: "1px solid rgba(255,255,255,0.15)",
+              alignItems: "center",
+              borderTop: "1px solid #f1f5f9",
               paddingTop: 12,
-              fontSize: 13,
-              color: "#a8b3bc",
+              fontSize: 12,
+              color: "#64748b",
             }}
           >
-            <span>{author}</span>
-            <span>{pageCount > 0 ? `${pageCount} Pages` : "Edition 1"}</span>
+            <span style={{ fontWeight: 600, color: "#334155" }}>{author}</span>
+            <span style={{ fontFamily: "monospace", fontSize: 11 }}>
+              {pageCount > 0 ? `${pageCount} Pages` : "Edition 1"}
+            </span>
           </div>
         </div>
 
@@ -169,6 +255,7 @@ export default async function Image({
         <div
           style={{
             flex: 1,
+            height: 480,
             marginLeft: 48,
             display: "flex",
             flexDirection: "column",
@@ -176,23 +263,25 @@ export default async function Image({
           }}
         >
           {/* Top Brand Tag */}
-          <div style={{ display: "flex", alignItems: "center" }}>
+          <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
             <div
               style={{
                 display: "flex",
+                flexDirection: "row",
                 alignItems: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.08)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                padding: "8px 16px",
-                borderRadius: 30,
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
+                padding: "8px 18px",
+                borderRadius: 9999,
+                boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
               }}
             >
               <span
                 style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  color: "#ffffff",
-                  letterSpacing: 1,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: "#0f172a",
+                  letterSpacing: 1.5,
                 }}
               >
                 VASUKI PUBLICATION
@@ -200,9 +289,9 @@ export default async function Image({
               <span
                 style={{
                   fontSize: 12,
-                  color: accentColor,
+                  color: "#059669",
                   marginLeft: 10,
-                  fontWeight: "bold",
+                  fontWeight: 700,
                 }}
               >
                 • VasukiSquare Engine
@@ -211,30 +300,31 @@ export default async function Image({
           </div>
 
           {/* Center Title & Subtitle */}
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <h1
+          <div style={{ display: "flex", flexDirection: "column", marginTop: "auto", marginBottom: "auto" }}>
+            <div
               style={{
-                fontSize: 44,
-                fontWeight: "bold",
-                color: "#ffffff",
-                lineHeight: 1.18,
+                display: "flex",
+                fontSize: titleFontSize,
+                fontWeight: 800,
+                color: "#0f172a",
+                lineHeight: 1.2,
                 letterSpacing: -1,
                 marginBottom: 16,
               }}
             >
               {title}
-            </h1>
+            </div>
             {subtitle ? (
-              <p
+              <div
                 style={{
-                  fontSize: 20,
-                  color: "#a8b3bc",
-                  lineHeight: 1.4,
-                  margin: 0,
+                  display: "flex",
+                  fontSize: 18,
+                  color: "#475569",
+                  lineHeight: 1.45,
                 }}
               >
-                {subtitle.length > 140 ? `${subtitle.slice(0, 140)}...` : subtitle}
-              </p>
+                {subtitle.length > 150 ? `${subtitle.slice(0, 150)}...` : subtitle}
+              </div>
             ) : null}
           </div>
 
@@ -242,25 +332,45 @@ export default async function Image({
           <div
             style={{
               display: "flex",
+              flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
-              borderTop: "1px solid rgba(255, 255, 255, 0.12)",
-              paddingTop: 20,
+              borderTop: "1.5px solid #e2e8f0",
+              paddingTop: 18,
             }}
           >
-            <div style={{ display: "flex", gap: 24, fontSize: 15, color: "#e1e5e8" }}>
-              <span>Category: <strong>{category}</strong></span>
-              {pageCount > 0 && <span>Length: <strong>{pageCount} Pages</strong></span>}
+            <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+              <div style={{ display: "flex", flexDirection: "row", alignItems: "center", marginRight: 20 }}>
+                <span style={{ fontSize: 14, color: "#64748b", marginRight: 4 }}>Category:</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{category}</span>
+              </div>
+              {pageCount > 0 && (
+                <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                  <span style={{ fontSize: 14, color: "#64748b", marginRight: 4 }}>Length:</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{pageCount} Pages</span>
+                </div>
+              )}
             </div>
-            <span
+            <div
               style={{
-                fontSize: 14,
-                color: accentColor,
-                fontWeight: "bold",
+                display: "flex",
+                alignItems: "center",
+                backgroundColor: "#ecfdf5",
+                border: "1px solid #a7f3d0",
+                padding: "6px 14px",
+                borderRadius: 8,
               }}
             >
-              Read Online on Web
-            </span>
+              <span
+                style={{
+                  fontSize: 13,
+                  color: "#047857",
+                  fontWeight: 700,
+                }}
+              >
+                Read Online on Web →
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -268,4 +378,3 @@ export default async function Image({
     { ...size }
   );
 }
-
