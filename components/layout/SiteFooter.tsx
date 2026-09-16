@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import { BookOpen, ShieldCheck, Heart } from "lucide-react";
+import Image from "next/image";
+import { ShieldCheck, Heart } from "lucide-react";
 
 export function SiteFooter() {
   return (
@@ -10,9 +11,13 @@ export function SiteFooter() {
           {/* Col 1: Brand & Philosophy */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 rounded bg-ink text-white flex items-center justify-center">
-                <BookOpen className="w-3.5 h-3.5 text-brand-green" />
-              </div>
+              <Image
+                src="/Vasuki.png"
+                alt="Vasuki Publication Logo"
+                width={24}
+                height={24}
+                className="w-6 h-6 object-contain"
+              />
               <span className="text-sm font-bold text-ink">Vasuki Publication</span>
             </div>
             <p className="text-xs text-body leading-relaxed max-w-md">

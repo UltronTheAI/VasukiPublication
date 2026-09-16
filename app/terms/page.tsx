@@ -15,6 +15,22 @@ export const metadata: Metadata = {
     title: "Terms of Service | Vasuki Publication",
     description: "Terms of service and acceptable usage policies for Vasuki Publication.",
     url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/terms`,
+    siteName: "Vasuki Publication",
+    type: "website",
+    images: [
+      {
+        url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: "Vasuki Publication Terms of Service",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terms of Service | Vasuki Publication",
+    description: "Terms of service and acceptable usage policies for Vasuki Publication.",
+    images: [`${publicEnv.NEXT_PUBLIC_SITE_URL}/opengraph-image`],
   },
 };
 

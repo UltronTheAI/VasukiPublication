@@ -1,4 +1,6 @@
 import { ImageResponse } from "next/og";
+import fs from "node:fs";
+import path from "node:path";
 
 export const alt = "Vasuki Publication — Public Web Platform for VasukiSquare Books";
 export const size = {
@@ -8,6 +10,14 @@ export const size = {
 export const contentType = "image/png";
 
 export default function Image() {
+  let logoBase64 = "";
+  try {
+    const logoBuffer = fs.readFileSync(path.join(process.cwd(), "public", "Vasuki.png"));
+    logoBase64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
+  } catch (err) {
+    console.error("Failed to load Vasuki.png for OpenGraph:", err);
+  }
+
   return new ImageResponse(
     (
       <div
@@ -66,41 +76,33 @@ export default function Image() {
               alignItems: "center",
             }}
           >
-            <div
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 10,
-                backgroundColor: "#059669",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 4px 6px -1px rgba(5, 150, 105, 0.2)",
-                marginRight: 12,
-              }}
-            >
-              <div
+            {logoBase64 ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={logoBase64}
+                width={44}
+                height={44}
                 style={{
-                  width: 18,
-                  height: 18,
-                  border: "3px solid #ffffff",
-                  borderRadius: 4,
-                  display: "flex",
+                  width: 44,
+                  height: 44,
+                  objectFit: "contain",
+                  marginRight: 14,
                 }}
+                alt="Vasuki Logo"
               />
-            </div>
+            ) : null}
             <div
               style={{
                 display: "flex",
                 flexDirection: "row",
-                fontSize: 24,
+                fontSize: 26,
                 fontWeight: 900,
                 color: "#0f172a",
                 letterSpacing: -0.5,
               }}
             >
               <span>Vasuki</span>
-              <span style={{ color: "#059669" }}>Publication</span>
+              <span style={{ color: "#059669", marginLeft: 4 }}>Publication</span>
             </div>
           </div>
 

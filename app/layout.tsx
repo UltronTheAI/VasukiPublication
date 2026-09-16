@@ -60,6 +60,11 @@ export const metadata: Metadata = {
   authors: [{ name: "Swaraj Puppalwar" }],
   creator: "Swaraj Puppalwar",
   publisher: "Vasuki Publication",
+  icons: {
+    icon: "/Vasuki.png",
+    shortcut: "/Vasuki.png",
+    apple: "/Vasuki.png",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",

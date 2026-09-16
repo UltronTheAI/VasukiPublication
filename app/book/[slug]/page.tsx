@@ -1,6 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPublicBookBySlug } from "@/lib/repositories/books";
 import { getCoverForBook } from "@/lib/repositories/covers";
@@ -115,11 +116,20 @@ export async function generateMetadata({
       description,
       siteName: "Vasuki Publication",
       authors: book.author ? [book.author] : ["VasukiSquare Editorial"],
+      images: [
+        {
+          url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/book/${book.slug}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: book.title,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: book.title,
       description,
+      images: [`${publicEnv.NEXT_PUBLIC_SITE_URL}/book/${book.slug}/opengraph-image`],
     },
   };
 }
@@ -234,7 +244,16 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
               </div>
               <div className="flex items-center justify-between pb-2 border-b border-hairline">
                 <span className="text-mute font-mono">Engine</span>
-                <span className="text-ink font-medium">VasukiSquare v{book.schema_version || 1}</span>
+                <span className="text-ink font-medium flex items-center gap-1.5">
+                  <Image
+                    src="/Vasuki.png"
+                    alt="Vasuki Logo"
+                    width={14}
+                    height={14}
+                    className="w-3.5 h-3.5 object-contain"
+                  />
+                  <span>VasukiSquare v{book.schema_version || 1}</span>
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-mute font-mono">Format</span>
@@ -272,6 +291,13 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 
             {/* Author Attribution */}
             <div className="mt-4 flex items-center gap-2 text-xs text-mute font-mono">
+              <Image
+                src="/Vasuki.png"
+                alt="Vasuki Logo"
+                width={16}
+                height={16}
+                className="w-4 h-4 object-contain shrink-0"
+              />
               <span>Authored by <strong className="text-ink font-semibold">{author}</strong></span>
               <span>•</span>
               <span>VasukiSquare Editorial</span>

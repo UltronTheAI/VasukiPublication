@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import { BookOpen, Bookmark, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { Bookmark, Sparkles } from "lucide-react";
 
 export function SiteHeader() {
   return (
@@ -8,9 +9,14 @@ export function SiteHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Brand Logo & Name */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-ink text-white flex items-center justify-center font-bold text-sm shadow-xs group-hover:scale-105 transition-transform">
-            <BookOpen className="w-4 h-4 text-brand-green" />
-          </div>
+          <Image
+            src="/Vasuki.png"
+            alt="Vasuki Publication Logo"
+            width={32}
+            height={32}
+            className="w-8 h-8 object-contain group-hover:scale-105 transition-transform"
+            priority
+          />
           <div className="flex flex-col">
             <span className="text-sm font-bold tracking-tight text-ink flex items-center gap-1.5">
               Vasuki Publication

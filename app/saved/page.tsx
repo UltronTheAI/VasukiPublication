@@ -15,8 +15,24 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Saved Publications | Vasuki Publication",
-    description: "Browse your locally saved VasukiSquare publications.",
+    description: "Browse your locally saved VasukiSquare publications for offline reading and quick reference.",
     url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/saved`,
+    siteName: "Vasuki Publication",
+    type: "website",
+    images: [
+      {
+        url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: "Vasuki Publication Saved Publications",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Saved Publications | Vasuki Publication",
+    description: "Browse your locally saved VasukiSquare publications for offline reading and quick reference.",
+    images: [`${publicEnv.NEXT_PUBLIC_SITE_URL}/opengraph-image`],
   },
   robots: {
     index: false,

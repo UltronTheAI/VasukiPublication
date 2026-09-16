@@ -15,6 +15,22 @@ export const metadata: Metadata = {
     title: "Privacy Policy | Vasuki Publication",
     description: "Privacy practices and local storage policies for Vasuki Publication.",
     url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/privacy`,
+    siteName: "Vasuki Publication",
+    type: "website",
+    images: [
+      {
+        url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: "Vasuki Publication Privacy Policy",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy | Vasuki Publication",
+    description: "Privacy practices and local storage policies for Vasuki Publication.",
+    images: [`${publicEnv.NEXT_PUBLIC_SITE_URL}/opengraph-image`],
   },
 };
 

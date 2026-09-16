@@ -1,4 +1,6 @@
 import { ImageResponse } from "next/og";
+import fs from "node:fs";
+import path from "node:path";
 import { getPublicBookBySlug } from "@/lib/repositories/books";
 import { getCoverForBook } from "@/lib/repositories/covers";
 import type { CoverDesignPlan } from "@/lib/types/publication";
@@ -17,6 +19,14 @@ export default async function Image({
 }) {
   const { slug } = await params;
   const book = await getPublicBookBySlug(slug);
+
+  let logoBase64 = "";
+  try {
+    const logoBuffer = fs.readFileSync(path.join(process.cwd(), "public", "Vasuki.png"));
+    logoBase64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
+  } catch (err) {
+    console.error("Failed to load Vasuki.png for Book OpenGraph:", err);
+  }
 
   if (!book) {
     return new ImageResponse(
@@ -47,6 +57,21 @@ export default async function Image({
               marginBottom: 20,
             }}
           >
+            {logoBase64 ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={logoBase64}
+                width={22}
+                height={22}
+                style={{
+                  width: 22,
+                  height: 22,
+                  objectFit: "contain",
+                  marginRight: 8,
+                }}
+                alt="Vasuki Logo"
+              />
+            ) : null}
             <span
               style={{
                 fontSize: 14,
@@ -321,6 +346,21 @@ export default async function Image({
                 boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
               }}
             >
+              {logoBase64 ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={logoBase64}
+                  width={22}
+                  height={22}
+                  style={{
+                    width: 22,
+                    height: 22,
+                    objectFit: "contain",
+                    marginRight: 8,
+                  }}
+                  alt="Vasuki Logo"
+                />
+              ) : null}
               <span
                 style={{
                   fontSize: 13,

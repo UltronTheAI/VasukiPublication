@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ChevronLeft,
   ChevronRight,
@@ -388,7 +389,7 @@ export function ReaderContainer({
         suppressHydrationWarning
       >
         {/* Left: Overview Back Button & Book Title Branding */}
-        <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink">
           <Link
             href={`/book/${book.slug}`}
             className="flex items-center gap-1 p-2 sm:px-3 sm:py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-semibold transition-colors shrink-0 cursor-pointer"
@@ -396,6 +397,20 @@ export function ReaderContainer({
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Overview</span>
+          </Link>
+
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 shrink-0 hover:opacity-85 transition-opacity"
+            title="Vasuki Publication"
+          >
+            <Image
+              src="/Vasuki.png"
+              alt="Vasuki Logo"
+              width={24}
+              height={24}
+              className="w-5 h-5 sm:w-6 sm:h-6 object-contain"
+            />
           </Link>
 
           <div className="h-4 sm:h-5 w-px bg-slate-200 shrink-0 hidden xs:block" />

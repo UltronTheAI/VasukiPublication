@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import type { Book, Cover, CoverDesignPlan } from "@/lib/types/publication";
 import { resolveVasukiIconName } from "@/lib/vasuki/icon-map";
 import {
@@ -181,8 +182,14 @@ export function CoverPreview({
           <span className="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-bold bg-[#001e2b] text-white border border-white/10 shadow-xs">
             {categoryBadge}
           </span>
-          <div className="w-6 h-6 rounded-full bg-emerald-500/15 text-emerald-700 flex items-center justify-center">
-            <HeroIcon iconName={heroIconName} className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-1">
+            <Image
+              src="/Vasuki.png"
+              alt="Vasuki Publication"
+              width={18}
+              height={18}
+              className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain"
+            />
           </div>
         </div>
 
@@ -210,7 +217,16 @@ export function CoverPreview({
 
       {/* Bottom Footer Strip (Full width flush with card border and corners) */}
       <div className={`relative z-10 w-full bg-[#001e2b] text-white border-t border-white/10 flex items-center justify-between shrink-0 ${footerPadding}`}>
-        <span className="truncate max-w-[70%] font-bold text-white">{author}</span>
+        <div className="flex items-center gap-1.5 truncate max-w-[70%]">
+          <Image
+            src="/Vasuki.png"
+            alt="Vasuki"
+            width={14}
+            height={14}
+            className="w-3 h-3 object-contain shrink-0"
+          />
+          <span className="truncate font-bold text-white">{author}</span>
+        </div>
         <span className="font-mono tracking-wider text-slate-300 uppercase shrink-0">
           {edition}
         </span>

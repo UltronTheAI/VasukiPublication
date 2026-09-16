@@ -49,6 +49,22 @@ export async function generateMetadata({ searchParams }: HomePageProps): Promise
       title,
       description,
       url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/`,
+      siteName: "Vasuki Publication",
+      type: "website",
+      images: [
+        {
+          url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`${publicEnv.NEXT_PUBLIC_SITE_URL}/opengraph-image`],
     },
     robots:
       rawQuery || currentPage > 1

@@ -42,6 +42,21 @@ export async function generateMetadata({ params }: ReaderPageProps): Promise<Met
       description,
       url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/book/${book.slug}/read`,
       type: "article",
+      siteName: "Vasuki Publication",
+      images: [
+        {
+          url: `${publicEnv.NEXT_PUBLIC_SITE_URL}/book/${book.slug}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: book.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`${publicEnv.NEXT_PUBLIC_SITE_URL}/book/${book.slug}/opengraph-image`],
     },
     robots: {
       index: false,
