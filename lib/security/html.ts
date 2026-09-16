@@ -46,6 +46,31 @@ export function sanitizeHtml(rawHtml: string): string {
 }
 
 /**
+ * Extracts clean fragment HTML from potentially full HTML documents,
+ * stripping <!DOCTYPE>, <html>, <head>, <title>, and <body> wrappers
+ * so the markup can be safely embedded inside DOM containers without hydration issues.
+ */
+export function extractCleanPageHtml(rawHtml: string): string {
+  if (!rawHtml || typeof rawHtml !== "string") return "";
+
+  let cleaned = rawHtml;
+
+  // If document contains <body>...</body>, extract the body inner content
+  const bodyMatch = cleaned.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i);
+  if (bodyMatch) {
+    cleaned = bodyMatch[1];
+  } else {
+    cleaned = cleaned
+      .replace(/<!DOCTYPE[^>]*>/gi, "")
+      .replace(/<head\b[^<]*(?:(?!<\/head>)<[^<]*)*<\/head>/gi, "")
+      .replace(/<title\b[^<]*(?:(?!<\/title>)<[^<]*)*<\/title>/gi, "")
+      .replace(/<\/?(?:html|body)\b[^>]*>/gi, "");
+  }
+
+  return sanitizeHtml(cleaned).trim();
+}
+
+/**
  * Escapes plain text for safe insertion into HTML strings.
  */
 export function escapeHtml(text: string): string {

@@ -14,7 +14,6 @@ import {
   ArrowRight,
   ChevronRight,
   Clock,
-  Eye,
   ShieldCheck,
   Tag,
   CheckCircle2,
@@ -140,7 +139,6 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
   const pageCount = book.page_count || 0;
   const chapterCount = book.chapter_count || (book.chapters?.length ?? 0);
   const author = book.author || "VasukiSquare Editorial";
-  const views = book.stats?.views || 0;
   const keywords = book.discovery?.keywords || [];
   const publishedDate = book.publication?.published_at
     ? new Date(book.publication.published_at).toLocaleDateString("en-US", {
@@ -149,9 +147,6 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
         day: "numeric",
       })
     : "Recently Published";
-
-  // Estimated reading time (~2.5 mins per dense technical page)
-  const estimatedReadingTime = pageCount > 0 ? `${Math.round(pageCount * 2.5)} min read` : "Quick Read";
 
   // Schema.org JSON-LD Structured Data
   const jsonLd = {
@@ -234,13 +229,6 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
             {/* Publication Identity Card */}
             <div className="w-full bg-canvas-soft border border-hairline rounded-xl p-4 mt-6 text-xs text-body space-y-2.5">
               <div className="flex items-center justify-between pb-2 border-b border-hairline">
-                <span className="text-mute font-mono">Status</span>
-                <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 text-[10px]">
-                  <CheckCircle2 className="w-3 h-3 text-brand-green" />
-                  Published
-                </span>
-              </div>
-              <div className="flex items-center justify-between pb-2 border-b border-hairline">
                 <span className="text-mute font-mono">Date</span>
                 <span className="text-ink font-medium">{publishedDate}</span>
               </div>
@@ -290,7 +278,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
             </div>
 
             {/* Metric Counters Banner */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-8">
+            <div className="grid grid-cols-2 gap-3 my-8 max-w-xs sm:max-w-sm">
               <div className="bg-canvas-soft border border-hairline rounded-xl p-3.5 text-center">
                 <div className="flex items-center justify-center text-mute mb-1">
                   <BookOpen className="w-4 h-4" />
@@ -305,22 +293,6 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
                 </div>
                 <div className="text-lg font-bold text-ink">{chapterCount}</div>
                 <div className="text-[10px] font-mono text-mute uppercase">Chapters</div>
-              </div>
-
-              <div className="bg-canvas-soft border border-hairline rounded-xl p-3.5 text-center">
-                <div className="flex items-center justify-center text-mute mb-1">
-                  <Clock className="w-4 h-4" />
-                </div>
-                <div className="text-lg font-bold text-ink">{estimatedReadingTime.split(" ")[0]}m</div>
-                <div className="text-[10px] font-mono text-mute uppercase">Est. Read</div>
-              </div>
-
-              <div className="bg-canvas-soft border border-hairline rounded-xl p-3.5 text-center">
-                <div className="flex items-center justify-center text-mute mb-1">
-                  <Eye className="w-4 h-4" />
-                </div>
-                <div className="text-lg font-bold text-ink">{views}</div>
-                <div className="text-[10px] font-mono text-mute uppercase">Views</div>
               </div>
             </div>
 
@@ -386,7 +358,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
               </div>
 
               {book.chapters && book.chapters.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[460px] overflow-y-auto pr-2 custom-scrollbar">
                   {book.chapters.map((ch) => (
                     <div
                       key={ch.chapter_number}
@@ -442,4 +414,5 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
     </div>
   );
 }
+
 
