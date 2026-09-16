@@ -15,7 +15,6 @@ import {
   ZoomOut,
   Bookmark,
   BookmarkCheck,
-  Search,
   X,
 } from "lucide-react";
 import { VasukiBookPage } from "@/components/reader/VasukiBookPage";
@@ -46,7 +45,6 @@ export function ReaderContainer({
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isTocOpen, setIsTocOpen] = useState<boolean>(false);
-  const [tocSearch, setTocSearch] = useState<string>("");
   const [flipDirection, setFlipDirection] = useState<"next" | "prev" | null>(null);
 
   const { isSaved, toggle } = useSavedBooks();
@@ -360,15 +358,6 @@ export function ReaderContainer({
     currentPage === 1 ||
     (chaptersWithPageRanges.length > 0 && currentPage < chaptersWithPageRanges[0].startPage);
 
-  const filteredChapters = React.useMemo(() => {
-    return chaptersWithPageRanges.filter(
-      (ch) =>
-        !tocSearch ||
-        ch.title.toLowerCase().includes(tocSearch.toLowerCase()) ||
-        String(ch.chapter_number).includes(tocSearch)
-    );
-  }, [chaptersWithPageRanges, tocSearch]);
-
   return (
     <div
       ref={readerRef}
@@ -618,20 +607,6 @@ export function ReaderContainer({
               </button>
             </div>
 
-            {/* Search Filter */}
-            <div className="p-3 border-b border-slate-200 bg-slate-50">
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Filter chapters..."
-                  value={tocSearch}
-                  onChange={(e) => setTocSearch(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:border-emerald-500"
-                />
-              </div>
-            </div>
-
             {/* Chapter List */}
             <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
               {/* Cover jump item */}
@@ -668,7 +643,7 @@ export function ReaderContainer({
               </button>
 
               {/* Chapters */}
-              {filteredChapters.map((ch) => {
+              {chaptersWithPageRanges.map((ch) => {
                 const isCurrent =
                   currentPage >= ch.startPage && currentPage <= ch.endPage;
 
