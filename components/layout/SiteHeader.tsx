@@ -42,7 +42,7 @@ export function SiteHeader() {
             Handbooks
           </Link>
           <a
-            href="https://github.com/UltronTheAI"
+            href="https://github.com/UltronTheAI/VasukiSquare"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-ink transition-colors flex items-center gap-1"
