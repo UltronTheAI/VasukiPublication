@@ -17,23 +17,24 @@ import {
   BookmarkCheck,
   Search,
   X,
-  Sparkles,
 } from "lucide-react";
 import { VasukiBookPage } from "@/components/reader/VasukiBookPage";
-import { VasukiIcon } from "@/components/vasuki/VasukiIcon";
 import { useSavedBooks } from "@/lib/hooks/useSavedBooks";
 import type { Book, Page } from "@/lib/types/publication";
+import type { ChapterRange } from "@/lib/repositories/pages";
 
 interface ReaderContainerProps {
   book: Book;
-  initialPage: number;
-  initialPages: Page[];
+  initialPage?: number;
+  initialPages?: Page[];
+  chapterRanges?: Record<number, ChapterRange>;
 }
 
 export function ReaderContainer({
   book,
   initialPage = 1,
   initialPages = [],
+  chapterRanges,
 }: ReaderContainerProps) {
   const totalPages = Math.max(1, book.page_count || 1);
 
@@ -324,12 +325,49 @@ export function ReaderContainer({
   const leftPageData = pageCache[effectiveLeftPageNum];
   const rightPageData = effectiveRightPageNum ? pageCache[effectiveRightPageNum] : null;
 
-  const filteredChapters = (book.chapters || []).filter(
-    (ch) =>
-      !tocSearch ||
-      ch.title.toLowerCase().includes(tocSearch.toLowerCase()) ||
-      String(ch.chapter_number).includes(tocSearch)
-  );
+  // ---------------------------------------------------------------------------
+  // Accurate Cumulative & Database Chapter Page Ranges
+  // ---------------------------------------------------------------------------
+  const chaptersWithPageRanges = React.useMemo(() => {
+    let fallbackCursor = 1;
+    return (book.chapters || []).map((ch) => {
+      const dbRange = chapterRanges?.[ch.chapter_number];
+      if (
+        dbRange &&
+        typeof dbRange.start_page === "number" &&
+        typeof dbRange.end_page === "number"
+      ) {
+        return {
+          ...ch,
+          startPage: dbRange.start_page,
+          endPage: dbRange.end_page,
+          page_count: dbRange.page_count,
+        };
+      }
+      const startPage = fallbackCursor;
+      const count = Math.max(1, ch.page_count || 1);
+      const endPage = startPage + count - 1;
+      fallbackCursor += count;
+      return {
+        ...ch,
+        startPage,
+        endPage,
+      };
+    });
+  }, [book.chapters, chapterRanges]);
+
+  const isCoverActive =
+    currentPage === 1 ||
+    (chaptersWithPageRanges.length > 0 && currentPage < chaptersWithPageRanges[0].startPage);
+
+  const filteredChapters = React.useMemo(() => {
+    return chaptersWithPageRanges.filter(
+      (ch) =>
+        !tocSearch ||
+        ch.title.toLowerCase().includes(tocSearch.toLowerCase()) ||
+        String(ch.chapter_number).includes(tocSearch)
+    );
+  }, [chaptersWithPageRanges, tocSearch]);
 
   return (
     <div
@@ -595,83 +633,77 @@ export function ReaderContainer({
             </div>
 
             {/* Chapter List */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
               {/* Cover jump item */}
               <button
                 onClick={() => {
                   goToPage(1);
                   setIsTocOpen(false);
                 }}
-                className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
-                  currentPage === 1
-                    ? "bg-emerald-50 border-emerald-400 text-emerald-900 font-semibold"
-                    : "bg-slate-50 border-slate-200/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                className={`w-full text-left px-3.5 py-2.5 rounded-lg border transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                  isCoverActive
+                    ? "bg-emerald-50/90 border-emerald-300 text-emerald-950 font-medium shadow-2xs"
+                    : "bg-white hover:bg-slate-50 border-slate-200/80 text-slate-700 hover:text-slate-900"
                 }`}
               >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                    <Sparkles className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-slate-900">Cover & Title</div>
-                    <div className="text-[10.5px] text-slate-500">Publication Cover Page</div>
-                  </div>
+                <div className="flex items-center gap-3 min-w-0">
+                  <span
+                    className={`font-mono text-xs font-semibold w-6 shrink-0 text-center ${
+                      isCoverActive ? "text-emerald-700" : "text-slate-400"
+                    }`}
+                  >
+                    —
+                  </span>
+                  <span className="text-xs sm:text-sm font-medium text-slate-800 truncate">
+                    Cover
+                  </span>
                 </div>
-                <span className="font-mono text-[11px] text-slate-500">p. 1</span>
+                <span
+                  className={`font-mono text-xs shrink-0 ${
+                    isCoverActive ? "text-emerald-700 font-semibold" : "text-slate-400"
+                  }`}
+                >
+                  p. 1
+                </span>
               </button>
 
               {/* Chapters */}
               {filteredChapters.map((ch) => {
-                const chStartPage = Math.max(1, (ch.chapter_number - 1) * 2 + 2);
                 const isCurrent =
-                  currentPage >= chStartPage &&
-                  currentPage < chStartPage + (ch.page_count || 2);
+                  currentPage >= ch.startPage && currentPage <= ch.endPage;
 
                 return (
                   <button
                     key={ch.chapter_number}
                     onClick={() => {
-                      goToPage(chStartPage);
+                      goToPage(ch.startPage);
                       setIsTocOpen(false);
                     }}
-                    className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
+                    className={`w-full text-left px-3.5 py-2.5 rounded-lg border transition-all flex items-center justify-between gap-3 cursor-pointer ${
                       isCurrent
-                        ? "bg-emerald-50 border-emerald-400 text-emerald-900 font-semibold"
-                        : "bg-slate-50 border-slate-200/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                        ? "bg-emerald-50/90 border-emerald-300 text-emerald-950 font-medium shadow-2xs"
+                        : "bg-white hover:bg-slate-50 border-slate-200/80 text-slate-700 hover:text-slate-900"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                      <div className="w-7 h-7 rounded-lg bg-slate-200/80 text-slate-800 flex items-center justify-center shrink-0 text-xs font-mono font-bold">
-                        {ch.icon ? (
-                          <VasukiIcon name={ch.icon} size={14} />
-                        ) : (
-                          ch.chapter_number
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-700 font-semibold">
-                          Chapter {ch.chapter_number}
-                        </div>
-                        <div className="text-xs font-semibold text-slate-900 truncate">
-                          {ch.title}
-                        </div>
-                        {ch.summary && (
-                          <div className="text-[10.5px] text-slate-500 truncate mt-0.5">
-                            {ch.summary}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <span className="font-mono text-[11px] text-slate-500">
-                        p. {chStartPage}
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        className={`font-mono text-xs font-bold w-6 shrink-0 text-center ${
+                          isCurrent ? "text-emerald-700" : "text-slate-400"
+                        }`}
+                      >
+                        {String(ch.chapter_number).padStart(2, "0")}
                       </span>
-                      {ch.page_count > 0 && (
-                        <div className="text-[9.5px] text-slate-400 font-mono">
-                          {ch.page_count} pp
-                        </div>
-                      )}
+                      <span className="text-xs sm:text-sm font-medium text-slate-800 truncate">
+                        {ch.title}
+                      </span>
                     </div>
+                    <span
+                      className={`font-mono text-xs shrink-0 ${
+                        isCurrent ? "text-emerald-700 font-semibold" : "text-slate-400"
+                      }`}
+                    >
+                      p. {ch.startPage}
+                    </span>
                   </button>
                 );
               })}

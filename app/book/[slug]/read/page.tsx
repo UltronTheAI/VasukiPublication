@@ -2,7 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublicBookBySlug } from "@/lib/repositories/books";
-import { getBookPages } from "@/lib/repositories/pages";
+import { getBookPages, getBookChapterRanges } from "@/lib/repositories/pages";
 import { ReaderContainer } from "@/components/reader/ReaderContainer";
 import { publicEnv } from "@/lib/env";
 
@@ -70,14 +70,18 @@ export default async function BookReaderPage({
   }
 
   const bookId = book.id || book._id || "";
-  // Fetch initial 2 pages from database for instant zero-delay SSR render
-  const initialPages = await getBookPages(bookId, initialPageNumber, 2);
+  // Fetch initial 2 pages and chapter ranges for precise Table of Contents navigation
+  const [initialPages, chapterRanges] = await Promise.all([
+    getBookPages(bookId, initialPageNumber, 2),
+    getBookChapterRanges(bookId),
+  ]);
 
   return (
     <ReaderContainer
       book={book}
       initialPage={initialPageNumber}
       initialPages={initialPages}
+      chapterRanges={chapterRanges}
     />
   );
 }

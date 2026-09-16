@@ -133,4 +133,54 @@ export async function updatePageAdmin(
   return normalizePageDoc(result as unknown as Record<string, unknown>);
 }
 
+export interface ChapterRange {
+  chapter_number: number;
+  start_page: number;
+  end_page: number;
+  page_count: number;
+}
+
+/**
+ * Retrieve exact starting and ending page numbers for each chapter of a book from the pages collection.
+ */
+export async function getBookChapterRanges(
+  bookId: string
+): Promise<Record<number, ChapterRange>> {
+  if (!bookId) return {};
+
+  const collection = await getPagesCollection();
+  const docs = await collection
+    .aggregate<{
+      _id: number;
+      start_page: number;
+      end_page: number;
+      page_count: number;
+    }>([
+      { $match: { book_id: bookId, chapter_number: { $ne: null } } },
+      {
+        $group: {
+          _id: "$chapter_number",
+          start_page: { $min: "$page_number" },
+          end_page: { $max: "$page_number" },
+          page_count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ])
+    .toArray();
+
+  const map: Record<number, ChapterRange> = {};
+  for (const d of docs) {
+    if (typeof d._id === "number") {
+      map[d._id] = {
+        chapter_number: d._id,
+        start_page: d.start_page,
+        end_page: d.end_page,
+        page_count: d.page_count,
+      };
+    }
+  }
+  return map;
+}
+
 
