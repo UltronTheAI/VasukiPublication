@@ -261,7 +261,45 @@
   overflow-y: auto !important;
   overflow-x: hidden !important;
   box-sizing: border-box !important;
-  padding: 6px 4px 16px 4px !important;
+  padding: 8px 18px 20px 4px !important;
+  scrollbar-gutter: stable;
+}
+
+/* Elegant, slim custom scrollbars scoped to Vasuki Book pages with breathing room */
+.vasuki-book-root * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+}
+
+.vasuki-book-root *::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.vasuki-book-root *::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+
+.vasuki-book-root *::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.35);
+  border-radius: 9999px;
+}
+
+.vasuki-book-root *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.65);
+}
+
+.vasuki-book-root .page.theme-dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+
+.vasuki-book-root .page.theme-dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.28);
+}
+
+.vasuki-book-root .page.theme-dark *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.55);
 }
 
 @media (min-width: 768px) {
