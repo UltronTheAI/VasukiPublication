@@ -23,22 +23,46 @@ function extractSvgFromHtml(html?: string | null): string | null {
   return svgMatch ? svgMatch[0] : null;
 }
 
-function isHexDark(hex?: string | null): boolean {
-  if (!hex || typeof hex !== "string") return false;
-  const clean = hex.replace("#", "").trim();
-  if (clean.length === 3) {
-    const r = parseInt(clean[0] + clean[0], 16);
-    const g = parseInt(clean[1] + clean[1], 16);
-    const b = parseInt(clean[2] + clean[2], 16);
-    return (r * 299 + g * 587 + b * 114) / 1000 < 128;
+function getLuminance(hexOrColor?: string | null): number | null {
+  if (!hexOrColor || typeof hexOrColor !== "string") return null;
+  const str = hexOrColor.trim();
+
+  // 1. Hex parsing (#RGB, #RRGGBB, #RRGGBBAA)
+  if (str.startsWith("#")) {
+    const clean = str.replace("#", "").trim();
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    if (clean.length === 3 || clean.length === 4) {
+      r = parseInt(clean[0] + clean[0], 16);
+      g = parseInt(clean[1] + clean[1], 16);
+      b = parseInt(clean[2] + clean[2], 16);
+    } else if (clean.length >= 6) {
+      r = parseInt(clean.substring(0, 2), 16);
+      g = parseInt(clean.substring(2, 4), 16);
+      b = parseInt(clean.substring(4, 6), 16);
+    } else {
+      return null;
+    }
+    return (r * 299 + g * 587 + b * 114) / 1000;
   }
-  if (clean.length === 6) {
-    const r = parseInt(clean.substring(0, 2), 16);
-    const g = parseInt(clean.substring(2, 4), 16);
-    const b = parseInt(clean.substring(4, 6), 16);
-    return (r * 299 + g * 587 + b * 114) / 1000 < 128;
+
+  // 2. rgb / rgba parsing
+  const rgbMatch = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1], 10);
+    const g = parseInt(rgbMatch[2], 10);
+    const b = parseInt(rgbMatch[3], 10);
+    return (r * 299 + g * 587 + b * 114) / 1000;
   }
-  return false;
+
+  return null;
+}
+
+function isColorDark(color?: string | null): boolean {
+  const lum = getLuminance(color);
+  if (lum === null) return false;
+  return lum < 145;
 }
 
 /**
@@ -295,16 +319,48 @@ export function VasukiBookPage({
     htmlIcon ||
     null;
 
-  // 3. Determine Effective Theme (Auto-detect dark bg from MongoDB if not explicit)
+  // 3. Determine Effective Theme & Contrast Invariants
+  const isBgDark =
+    (customBg ? isColorDark(customBg) : false) ||
+    (customGradient
+      ? customGradient.includes("#0") ||
+        customGradient.includes("#1") ||
+        customGradient.includes("#2") ||
+        isColorDark(customBg)
+      : false);
+
   const effectiveTheme =
     themeOverride === "dark" || themeOverride === "light"
       ? themeOverride
+      : isBgDark
+      ? "dark"
       : (page.style?.theme as "light" | "dark") ||
         (page.theme as "light" | "dark") ||
         (nextPage?.style?.theme as "light" | "dark") ||
         (nextPage?.theme as "light" | "dark") ||
         (currentChapterMeta?.theme as "light" | "dark") ||
-        (customBg ? (isHexDark(customBg) ? "dark" : "light") : "light");
+        "light";
+
+  const isDarkCanvas = effectiveTheme === "dark" || isBgDark;
+
+  // Enforce high-contrast text colors on dark backgrounds
+  const resolvedTextColor = isDarkCanvas
+    ? !customTextColor || isColorDark(customTextColor)
+      ? "#ffffff"
+      : customTextColor
+    : customTextColor;
+
+  const resolvedTextSecondary = isDarkCanvas
+    ? !customTextMuted || isColorDark(customTextMuted)
+      ? "#e2e8f0"
+      : customTextMuted
+    : customTextMuted;
+
+  const resolvedTextMuted = isDarkCanvas
+    ? !customTextMuted || isColorDark(customTextMuted)
+      ? "#cbd5e1"
+      : customTextMuted
+    : customTextMuted;
 
   const hasStructuredBlocks = Boolean(page.content?.blocks && page.content.blocks.length > 0);
   const hasPreRenderedHtml = Boolean(page.html && page.html.trim().length > 0);
@@ -390,19 +446,47 @@ export function VasukiBookPage({
           ["--theme-accent-soft" as string]: customAccentSoft || `${customAccent}1f`,
         }
       : {}),
-    ...(customTextColor
+    ...(resolvedTextColor
       ? {
-          color: customTextColor,
-          ["--theme-text" as string]: customTextColor,
-          ["--text-primary" as string]: customTextColor,
-          ["--text-primary-dark" as string]: customTextColor,
+          color: resolvedTextColor,
+          ["--theme-text" as string]: resolvedTextColor,
+          ["--text-primary" as string]: resolvedTextColor,
+          ["--text-primary-dark" as string]: resolvedTextColor,
+        }
+      : isDarkCanvas
+      ? {
+          color: "#ffffff",
+          ["--theme-text" as string]: "#ffffff",
+          ["--text-primary" as string]: "#ffffff",
+          ["--text-primary-dark" as string]: "#ffffff",
         }
       : {}),
-    ...(customTextMuted
+    ...(resolvedTextSecondary
       ? {
-          ["--theme-text-muted" as string]: customTextMuted,
-          ["--theme-text-secondary" as string]: customTextMuted,
-          ["--theme-text-subtle" as string]: customTextMuted,
+          ["--theme-text-secondary" as string]: resolvedTextSecondary,
+          ["--text-secondary" as string]: resolvedTextSecondary,
+          ["--text-secondary-dark" as string]: resolvedTextSecondary,
+        }
+      : isDarkCanvas
+      ? {
+          ["--theme-text-secondary" as string]: "#e2e8f0",
+          ["--text-secondary" as string]: "#e2e8f0",
+          ["--text-secondary-dark" as string]: "#e2e8f0",
+        }
+      : {}),
+    ...(resolvedTextMuted
+      ? {
+          ["--theme-text-muted" as string]: resolvedTextMuted,
+          ["--theme-text-subtle" as string]: resolvedTextMuted,
+          ["--text-muted" as string]: resolvedTextMuted,
+          ["--text-muted-dark" as string]: resolvedTextMuted,
+        }
+      : isDarkCanvas
+      ? {
+          ["--theme-text-muted" as string]: "#cbd5e1",
+          ["--theme-text-subtle" as string]: "#94a3b8",
+          ["--text-muted" as string]: "#cbd5e1",
+          ["--text-muted-dark" as string]: "#cbd5e1",
         }
       : {}),
     ...(customBorderColor
@@ -411,10 +495,19 @@ export function VasukiBookPage({
           ["--theme-border" as string]: customBorderColor,
           ["--theme-border-strong" as string]: customBorderStrong || customBorderColor,
         }
+      : isDarkCanvas
+      ? {
+          ["--theme-border" as string]: "rgba(255, 255, 255, 0.12)",
+          ["--theme-border-strong" as string]: "rgba(255, 255, 255, 0.28)",
+        }
       : {}),
     ...(customCardBg
       ? {
           ["--theme-card-bg" as string]: customCardBg,
+        }
+      : isDarkCanvas
+      ? {
+          ["--theme-card-bg" as string]: "rgba(255, 255, 255, 0.06)",
         }
       : {}),
     ...(customDecorative

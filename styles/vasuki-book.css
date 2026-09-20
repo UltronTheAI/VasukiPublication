@@ -597,18 +597,40 @@
 
 .page.theme-dark {
   background-color: var(--color-canvas-dark);
-  color: var(--text-primary-dark);
+  color: var(--text-primary-dark, #ffffff);
   --theme-bg: var(--color-canvas-dark);
-  --theme-text: var(--text-primary-dark);
-  --theme-text-secondary: var(--text-secondary-dark);
-  --theme-text-muted: var(--text-muted-dark);
-  --theme-text-subtle: var(--text-subtle-dark);
-  --theme-card-bg: rgba(255, 255, 255, 0.05);
-  --theme-border: var(--color-hairline-dark);
+  --theme-text: #ffffff;
+  --theme-text-secondary: #e2e8f0;
+  --theme-text-muted: #cbd5e1;
+  --theme-text-subtle: #94a3b8;
+  --theme-card-bg: rgba(255, 255, 255, 0.06);
+  --theme-border: rgba(255, 255, 255, 0.14);
   --theme-border-strong: rgba(255, 255, 255, 0.28);
-  --theme-accent: #38bdf8;
-  --theme-accent-soft: rgba(56, 189, 248, 0.12);
+  --theme-accent: #00ed64;
+  --theme-accent-soft: rgba(0, 237, 100, 0.15);
   --theme-decorative: rgba(255, 255, 255, 0.04);
+}
+
+.page.theme-dark p,
+.page.theme-dark li,
+.page.theme-dark td,
+.page.theme-dark th,
+.page.theme-dark blockquote,
+.page.theme-dark .callout-content,
+.page.theme-dark .content-body,
+.page.theme-dark .typo-lead,
+.page.theme-dark .typo-subtitle {
+  color: var(--theme-text-secondary, #e2e8f0) !important;
+}
+
+.page.theme-dark h1,
+.page.theme-dark h2,
+.page.theme-dark h3,
+.page.theme-dark h4,
+.page.theme-dark h5,
+.page.theme-dark h6,
+.page.theme-dark strong {
+  color: var(--theme-text, #ffffff) !important;
 }
 
 /* Header & Footer Chrome (High-Contrast, Clean Layout, Zero Overflow) */
@@ -977,33 +999,34 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
 
 /* 2. Terminal Block */
 .component-terminal-window {
-  background-color: #00121a;
-  border-radius: var(--radius-lg, 10px);
-  border: 1px solid var(--color-hairline-dark);
-  overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 30, 43, 0.25);
+  background-color: #07151e !important;
+  border-radius: var(--radius-lg, 10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  overflow: hidden !important;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.45) !important;
   margin: 12px 0 !important;
-  max-width: 100%;
-  width: 100%;
+  max-width: 100% !important;
+  width: 100% !important;
   height: auto !important;
   min-height: auto !important;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
   flex-shrink: 0 !important;
+  color: #f1f5f9 !important;
 }
 
 .terminal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 14px;
-  background-color: #000c12;
-  border-bottom: 1px solid var(--color-hairline-dark);
-  font-family: var(--font-code);
-  font-size: 11px;
-  min-height: 36px;
-  box-sizing: border-box;
-  flex-shrink: 0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 8px 14px !important;
+  background-color: #040c12 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  font-family: var(--font-code) !important;
+  font-size: 11px !important;
+  min-height: 36px !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
 }
 
 .terminal-dots {
@@ -1024,34 +1047,36 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
 .dot-green { background-color: #27c93f; }
 
 .terminal-title {
-  flex: 1 1 auto;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: left;
-  color: var(--text-muted-dark, #a8b3bc);
-  font-weight: 600;
-  font-size: 11px;
-  line-height: 1.2;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  text-align: left !important;
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+  font-size: 11.5px !important;
+  line-height: 1.2 !important;
+  padding: 0 8px !important;
 }
 
 .terminal-shell {
-  flex-shrink: 0;
-  color: var(--color-brand-green, #00ed64);
-  font-weight: 700;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 1.5px 7px;
-  border-radius: 4px;
-  background: rgba(0, 237, 100, 0.1);
-  border: 1px solid rgba(0, 237, 100, 0.22);
+  flex-shrink: 0 !important;
+  color: #00ed64 !important;
+  font-weight: 700 !important;
+  font-size: 10.5px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.8px !important;
+  padding: 2px 8px !important;
+  border-radius: 4px !important;
+  background: rgba(0, 237, 100, 0.15) !important;
+  border: 1px solid rgba(0, 237, 100, 0.4) !important;
+  text-shadow: 0 0 10px rgba(0, 237, 100, 0.3) !important;
 }
 
 .terminal-body {
   padding: 14px 18px !important;
-  font-family: var(--font-code);
+  font-family: var(--font-code) !important;
   font-size: 12.5px !important;
   line-height: 1.6 !important;
   height: auto !important;
@@ -1060,17 +1085,20 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
   overflow-y: auto !important;
   overflow-x: auto !important;
   box-sizing: border-box !important;
+  color: #f1f5f9 !important;
+  background-color: #07151e !important;
 }
 
 .terminal-line {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 3px;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  white-space: pre-wrap;
-  min-width: 0;
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 8px !important;
+  margin-bottom: 3px !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  white-space: pre-wrap !important;
+  min-width: 0 !important;
+  color: #f1f5f9 !important;
 }
 
 .terminal-line:last-child {
@@ -1078,75 +1106,85 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
 }
 
 .terminal-line.is-continuation {
-  padding-left: 12px;
-  color: #e2e8f0;
+  padding-left: 12px !important;
+  color: #e2e8f0 !important;
 }
 
 .terminal-prompt {
-  color: var(--color-brand-green, #00ed64);
-  user-select: none;
-  flex-shrink: 0;
-  font-weight: 700;
-  font-size: 12.5px;
+  color: #00ed64 !important;
+  user-select: none !important;
+  flex-shrink: 0 !important;
+  font-weight: 700 !important;
+  font-size: 12.5px !important;
 }
 
 .terminal-content {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  color: #f1f5f9 !important;
 }
 
 .terminal-cmd {
-  color: #ffffff;
-  font-weight: 600;
+  color: #c084fc !important;
+  font-weight: 700 !important;
 }
 
 .terminal-stdout {
-  color: #c1ccd6;
+  color: #e2e8f0 !important;
 }
 
 .terminal-comment {
-  color: #7c8c9a;
-  font-style: italic;
+  color: #94a3b8 !important;
+  font-style: italic !important;
 }
 
 .terminal-line.is-error .terminal-content {
-  color: #fa6e39;
-  font-weight: 500;
+  color: #f87171 !important;
+  font-weight: 500 !important;
 }
 
 .terminal-line.is-warning .terminal-content {
-  color: #ffbd2e;
+  color: #fbbf24 !important;
 }
 
 .terminal-line.is-success .terminal-content {
-  color: #00ed64;
-  font-weight: 500;
+  color: #4ade80 !important;
+  font-weight: 500 !important;
 }
 
 /* ==========================================================================
    Vibrant Terminal Syntax Tokens
    ========================================================================== */
+.t-txt {
+  color: #f1f5f9 !important; /* Regular arguments/words in crisp whitish */
+}
+
 .t-cmd {
-  color: #00ed64 !important; /* Vivid Emerald Command */
-  font-weight: 700;
+  color: #c084fc !important; /* Vivid Light Magenta/Purple Command */
+  font-weight: 700 !important;
 }
 
 .t-subcmd {
-  color: #38bdf8 !important; /* Bright Cyan Subcommand */
-  font-weight: 600;
+  color: #4ade80 !important; /* Bright Emerald Subcommand */
+  font-weight: 600 !important;
 }
 
 .t-flag {
   color: #fb923c !important; /* Vibrant Orange CLI Flag */
-  font-weight: 600;
+  font-weight: 600 !important;
+}
+
+.t-op {
+  color: #f472b6 !important; /* Hot Pink Operator: &&, ||, |, ;, > */
+  font-weight: 700 !important;
 }
 
 .t-url {
   color: #38bdf8 !important; /* Sky Blue Endpoint URL */
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
 }
 
 .t-str {
@@ -1154,62 +1192,62 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
 }
 
 .t-var {
-  color: #facc15 !important; /* Bright Gold Variable */
-  font-weight: 600;
+  color: #fde047 !important; /* Bright Gold Variable */
+  font-weight: 600 !important;
 }
 
 .t-method {
   color: #c084fc !important; /* Vivid Purple HTTP Verb */
-  font-weight: 700;
+  font-weight: 700 !important;
 }
 
 .t-key {
   color: #93c5fd !important; /* Soft Blue JSON Key */
-  font-weight: 600;
+  font-weight: 600 !important;
 }
 
 .t-num {
-  color: #f472b6 !important; /* Hot Pink Number/Port */
-  font-weight: 500;
+  color: #38bdf8 !important; /* Bright Cyan Number/Port */
+  font-weight: 500 !important;
 }
 
 .t-bool {
   color: #fb7185 !important; /* Rose Boolean */
-  font-weight: 600;
+  font-weight: 600 !important;
 }
 
 .t-slash {
-  color: #64748b !important; /* Slate Continuation Slash */
-  font-weight: 700;
+  color: #94a3b8 !important; /* Light Slate Continuation Slash */
+  font-weight: 700 !important;
 }
 
 .t-punct {
-  color: #94a3b8 !important; /* Muted Slate Punctuation */
+  color: #cbd5e1 !important; /* Muted Slate Punctuation */
 }
 
 .t-comment {
   color: #94a3b8 !important; /* Muted Slate Comment */
-  font-style: italic;
+  font-style: italic !important;
 }
 
 .t-success {
   color: #4ade80 !important; /* Bright Green Status */
-  font-weight: 600;
+  font-weight: 600 !important;
 }
 
 .t-header-key {
   color: #c084fc !important; /* Soft Violet Header Key */
-  font-weight: 600;
+  font-weight: 600 !important;
 }
 
 .t-error {
   color: #f87171 !important; /* Vivid Red Status */
-  font-weight: 600;
+  font-weight: 600 !important;
 }
 
 .t-warn {
   color: #fbbf24 !important; /* Amber Warning Status */
-  font-weight: 600;
+  font-weight: 600 !important;
 }
 
 /* 3. High-Contrast Table */

@@ -499,8 +499,8 @@ function colorizeTerminalLine(text: string, kind: string): React.ReactNode {
     return colorizeJsonString(text);
   }
 
-  // Tokenize CLI commands, arguments, variables, flags, endpoints, subcommands, numbers, and slashes
-  const tokenRegex = /(https?:\/\/[^\s"'\\]+)|("([^"\\]|\\.)*"|'([^'\\]|\\.)*')|(?:\$[A-Za-z0-9_]+|\$\{[A-Za-z0-9_]+\}|\$\([^\)]+\))|(--?[a-zA-Z0-9_-]+(?:=[^\s"']*)?)|(\b(?:GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b)|(\b(?:curl|git|npm|npx|pnpm|yarn|pip|python|python3|node|docker|kubectl|aws|az|gcloud|brew|cargo|go|rustc|deno|bun|sudo|cat|grep|cd|ls|mkdir|rm|touch|chmod|chown|echo|export|set|source|sh|bash|zsh)\b)|(\b(?:run|install|build|dev|start|test|commit|push|pull|checkout|branch|merge|status|clone|init|deploy|exec|logs)\b)|(\b\d+(?:\.\d+)?\b)|(\\\s*$)/g;
+  // Tokenize CLI commands, arguments, variables, flags, endpoints, subcommands, operators, numbers, and slashes
+  const tokenRegex = /(https?:\/\/[^\s"'\\]+)|("([^"\\]|\\.)*"|'([^'\\]|\\.)*')|(?:\$[A-Za-z0-9_]+|\$\{[A-Za-z0-9_]+\}|\$\([^\)]+\))|(--?[a-zA-Z0-9_-]+(?:=[^\s"']*)?)|(\b(?:GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b)|(\b(?:curl|git|npm|npx|pnpm|yarn|pip|python|python3|node|docker|kubectl|aws|az|gcloud|brew|cargo|go|rustc|deno|bun|sudo|cat|grep|cd|ls|mkdir|rm|touch|chmod|chown|echo|export|set|source|sh|bash|zsh)\b)|(\b(?:run|install|build|dev|start|test|commit|push|pull|checkout|branch|merge|status|clone|init|deploy|exec|logs|add|diff|reset|rebase|stash|tag|remote|fetch|config|show|log)\b)|(&&|\|\||\||;|>|>>|<)|(\b\d+(?:\.\d+)?\b)|(\\\s*$)/g;
 
   const nodes: React.ReactNode[] = [];
   let lastIndex = 0;
@@ -508,7 +508,11 @@ function colorizeTerminalLine(text: string, kind: string): React.ReactNode {
 
   while ((match = tokenRegex.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      nodes.push(text.slice(lastIndex, match.index));
+      nodes.push(
+        <span key={`txt-${nodes.length}`} className="t-txt">
+          {text.slice(lastIndex, match.index)}
+        </span>
+      );
     }
 
     const [
@@ -522,6 +526,7 @@ function colorizeTerminalLine(text: string, kind: string): React.ReactNode {
       httpMethod,
       cliCmd,
       cliSubcmd,
+      op,
       num,
       trailingSlash,
     ] = match;
@@ -564,6 +569,12 @@ function colorizeTerminalLine(text: string, kind: string): React.ReactNode {
           {cliSubcmd}
         </span>
       );
+    } else if (op) {
+      nodes.push(
+        <span key={nodes.length} className="t-op">
+          {op}
+        </span>
+      );
     } else if (num) {
       nodes.push(
         <span key={nodes.length} className="t-num">
@@ -577,14 +588,22 @@ function colorizeTerminalLine(text: string, kind: string): React.ReactNode {
         </span>
       );
     } else {
-      nodes.push(full);
+      nodes.push(
+        <span key={nodes.length} className="t-txt">
+          {full}
+        </span>
+      );
     }
 
     lastIndex = tokenRegex.lastIndex;
   }
 
   if (lastIndex < text.length) {
-    nodes.push(text.slice(lastIndex));
+    nodes.push(
+      <span key={`txt-${nodes.length}`} className="t-txt">
+        {text.slice(lastIndex)}
+      </span>
+    );
   }
 
   return nodes.length > 0 ? nodes : text;
