@@ -724,7 +724,6 @@
 
 .page.theme-dark {
   background-color: var(--color-canvas-dark);
-  color: var(--text-primary-dark, #ffffff);
   color: var(--text-primary-dark, #ffffff) !important;
   --theme-bg: var(--color-canvas-dark);
   --theme-text: #ffffff;
@@ -749,7 +748,6 @@
 .page.theme-dark .content-body,
 .page.theme-dark .content-body p,
 .page.theme-dark .typo-lead,
-.page.theme-dark .typo-subtitle {
 .page.theme-dark .typo-subtitle,
 .page.theme-dark .typo-body-md,
 .page.theme-dark .typo-body-sm,
@@ -777,7 +775,6 @@
 .page.theme-dark h4,
 .page.theme-dark h5,
 .page.theme-dark h6,
-.page.theme-dark strong {
 .page.theme-dark strong,
 .page.theme-dark .content-headline,
 .page.theme-dark .chapter-title,
