@@ -54,7 +54,7 @@ export function ReaderContainer({
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isTocOpen, setIsTocOpen] = useState<boolean>(false);
-  const [flipDirection, setFlipDirection] = useState<"next" | "prev" | null>(null);
+  const [flipDirection, setFlipDirection] = useState<"next" | "prev" | "open" | null>(null);
 
   const { isSaved, toggle } = useSavedBooks();
   const bookSlug = book.slug || book.id;
@@ -241,13 +241,14 @@ export function ReaderContainer({
   const goToPage = useCallback(
     (targetPage: number) => {
       const clamped = Math.min(Math.max(1, targetPage), totalPages);
-      if (clamped === currentPage) return;
+      const isOpeningSpread = currentPage === 1 && clamped > 1;
+      const dir = isOpeningSpread ? "open" : clamped > currentPage ? "next" : "prev";
 
-      setFlipDirection(clamped > currentPage ? "next" : "prev");
+      setFlipDirection(dir);
       setCurrentPage(clamped);
 
-      // Reset animation state
-      setTimeout(() => setFlipDirection(null), 300);
+      // Reset animation state after 3D animation duration
+      setTimeout(() => setFlipDirection(null), 520);
     },
     [currentPage, totalPages]
   );
@@ -608,43 +609,58 @@ export function ReaderContainer({
           <ChevronLeft className="w-5 h-5" />
         </button>
 
-        {/* Book Canvas Container */}
-        <div
-          className={`flex items-center justify-center gap-4 transition-transform duration-200 w-full h-full max-w-full max-h-full ${
-            flipDirection === "next"
-              ? "vasuki-flip-enter vasuki-flip-enter-active"
-              : flipDirection === "prev"
-              ? "vasuki-flip-back-enter vasuki-flip-back-enter-active"
-              : ""
-          }`}
-          style={{ transform: `scale(${zoomLevel / 100})` }}
-        >
-          {/* Left Page Slot */}
-          <div className="h-full w-auto max-w-[calc(100vw-1.75rem)] sm:max-w-full max-h-[calc(100dvh-5.5rem)] aspect-[210/297] flex items-center justify-center min-w-0 min-h-0 shrink drop-shadow-md">
-            {leftPageData ? (
-              <VasukiBookPage
-                page={leftPageData}
-                book={book}
-              />
-            ) : (
-              <div className="vasuki-book-root w-full h-full flex items-center justify-center">
-                <div className="vasuki-page-canvas bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm w-full h-full aspect-[210/297]">
-                  <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mb-3" />
-                  <p className="text-xs font-mono">Loading Page {effectiveLeftPageNum}...</p>
+        {/* Book Canvas 3D Viewport */}
+        <div className="book-3d-stage">
+          <div
+            className={`book-3d-spread ${
+              flipDirection === "open"
+                ? "is-opening"
+                : flipDirection === "next"
+                ? "is-flip-next"
+                : flipDirection === "prev"
+                ? "is-flip-prev"
+                : ""
+            } ${
+              !rightPageData
+                ? flipDirection === "next"
+                  ? "vasuki-flip-enter vasuki-flip-enter-active"
+                  : flipDirection === "prev"
+                  ? "vasuki-flip-back-enter vasuki-flip-back-enter-active"
+                  : ""
+                : ""
+            }`}
+            style={{ transform: `scale(${zoomLevel / 100})` }}
+          >
+            {/* Left Page Slot */}
+            <div
+              className={`h-full w-auto max-w-[calc(100vw-1.75rem)] sm:max-w-full max-h-[calc(100dvh-5.5rem)] aspect-[210/297] flex items-center justify-center min-w-0 min-h-0 shrink ${
+                rightPageData ? "book-page-slot-left" : "drop-shadow-md"
+              }`}
+            >
+              {leftPageData ? (
+                <VasukiBookPage page={leftPageData} book={book} />
+              ) : (
+                <div className="vasuki-book-root w-full h-full flex items-center justify-center">
+                  <div className="vasuki-page-canvas bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm w-full h-full aspect-[210/297]">
+                    <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mb-3" />
+                    <p className="text-xs font-mono">Loading Page {effectiveLeftPageNum}...</p>
+                  </div>
                 </div>
+              )}
+            </div>
+
+            {/* Book Spine Crease & Shadow in 2-Page Spread */}
+            {rightPageData && (
+              <div className="hidden xl:block book-spine-crease" aria-hidden="true" />
+            )}
+
+            {/* Right Page Slot (Spread mode only on large screens when not on Cover or standalone last page) */}
+            {rightPageData && (
+              <div className="hidden xl:flex h-full w-auto max-w-full max-h-[calc(100dvh-5.5rem)] aspect-[210/297] items-center justify-center min-w-0 min-h-0 shrink book-page-slot-right">
+                <VasukiBookPage page={rightPageData} book={book} />
               </div>
             )}
           </div>
-
-          {/* Right Page Slot (Spread mode only on large screens when not on Cover or standalone last page) */}
-          {rightPageData && (
-            <div className="hidden xl:flex h-full w-auto max-w-full max-h-[calc(100dvh-5.5rem)] aspect-[210/297] items-center justify-center min-w-0 min-h-0 shrink drop-shadow-md">
-              <VasukiBookPage
-                page={rightPageData}
-                book={book}
-              />
-            </div>
-          )}
         </div>
 
         {/* Next Page Floating Button (Visible on tablet/desktop) */}
