@@ -895,6 +895,88 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
   font-weight: 500;
 }
 
+/* ==========================================================================
+   Vibrant Terminal Syntax Tokens
+   ========================================================================== */
+.t-cmd {
+  color: #00ed64 !important; /* Vivid Emerald Command */
+  font-weight: 700;
+}
+
+.t-subcmd {
+  color: #38bdf8 !important; /* Bright Cyan Subcommand */
+  font-weight: 600;
+}
+
+.t-flag {
+  color: #fb923c !important; /* Vibrant Orange CLI Flag */
+  font-weight: 600;
+}
+
+.t-url {
+  color: #38bdf8 !important; /* Sky Blue Endpoint URL */
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.t-str {
+  color: #86efac !important; /* Mint Green String Literal */
+}
+
+.t-var {
+  color: #facc15 !important; /* Bright Gold Variable */
+  font-weight: 600;
+}
+
+.t-method {
+  color: #c084fc !important; /* Vivid Purple HTTP Verb */
+  font-weight: 700;
+}
+
+.t-key {
+  color: #93c5fd !important; /* Soft Blue JSON Key */
+  font-weight: 600;
+}
+
+.t-num {
+  color: #f472b6 !important; /* Hot Pink Number/Port */
+  font-weight: 500;
+}
+
+.t-bool {
+  color: #fb7185 !important; /* Rose Boolean */
+  font-weight: 600;
+}
+
+.t-slash {
+  color: #64748b !important; /* Slate Continuation Slash */
+  font-weight: 700;
+}
+
+.t-punct {
+  color: #94a3b8 !important; /* Muted Slate Punctuation */
+}
+
+.t-comment {
+  color: #94a3b8 !important; /* Muted Slate Comment */
+  font-style: italic;
+}
+
+.t-success {
+  color: #4ade80 !important; /* Bright Green Status */
+  font-weight: 600;
+}
+
+.t-error {
+  color: #f87171 !important; /* Vivid Red Status */
+  font-weight: 600;
+}
+
+.t-warn {
+  color: #fbbf24 !important; /* Amber Warning Status */
+  font-weight: 600;
+}
+
 /* 3. High-Contrast Table */
 .component-table-container {
   width: 100%;

@@ -300,6 +300,198 @@ function sanitizeTerminalLines(rawLines?: (string | TerminalLine)[]): CleanedTer
   return result;
 }
 
+function colorizeJsonString(str: string): React.ReactNode[] {
+  const jsonTokenRegex = /("([^"\\]|\\.)*"(?:\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|[{}[\],:])/g;
+  const nodes: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = jsonTokenRegex.exec(str)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(str.slice(lastIndex, match.index));
+    }
+    const token = match[0];
+    if (token.endsWith(":")) {
+      nodes.push(
+        <span key={nodes.length} className="t-key">
+          {token.slice(0, -1)}
+        </span>,
+        <span key={`${nodes.length}-colon`} className="t-punct">
+          :
+        </span>
+      );
+    } else if (token.startsWith('"') || token.startsWith("'")) {
+      nodes.push(
+        <span key={nodes.length} className="t-str">
+          {token}
+        </span>
+      );
+    } else if (token === "true" || token === "false" || token === "null") {
+      nodes.push(
+        <span key={nodes.length} className="t-bool">
+          {token}
+        </span>
+      );
+    } else if (/^-?\d/.test(token)) {
+      nodes.push(
+        <span key={nodes.length} className="t-num">
+          {token}
+        </span>
+      );
+    } else if (/[{}[\],]/.test(token)) {
+      nodes.push(
+        <span key={nodes.length} className="t-punct">
+          {token}
+        </span>
+      );
+    } else {
+      nodes.push(token);
+    }
+    lastIndex = jsonTokenRegex.lastIndex;
+  }
+
+  if (lastIndex < str.length) {
+    nodes.push(str.slice(lastIndex));
+  }
+
+  return nodes;
+}
+
+function colorizeTerminalLine(text: string, kind: string): React.ReactNode {
+  if (!text) return "\u00A0";
+
+  if (kind === "comment" || text.trim().startsWith("#")) {
+    return <span className="t-comment">{text}</span>;
+  }
+
+  if (kind === "error") {
+    return <span className="t-error">{text}</span>;
+  }
+
+  if (kind === "warning") {
+    return <span className="t-warn">{text}</span>;
+  }
+
+  if (kind === "success") {
+    return <span className="t-success">{text}</span>;
+  }
+
+  // Check for HTTP status line or standard server response
+  if (text.startsWith("HTTP/") || /^\d{3}\s+[A-Z]+/.test(text.trim())) {
+    const isSuccess = text.includes("200") || text.includes("201");
+    const isErr = text.includes("40") || text.includes("50");
+    return (
+      <span className={isSuccess ? "t-success" : isErr ? "t-error" : "t-subcmd"}>
+        {text}
+      </span>
+    );
+  }
+
+  // Tokenize CLI commands, arguments, variables, flags, endpoints, numbers, and JSON
+  const tokenRegex = /(https?:\/\/[^\s"'\\]+)|("([^"\\]|\\.)*"|'([^'\\]|\\.)*')|(?:\$[A-Z0-9_{}]+|\$\([^\)]+\))|(--?[a-zA-Z0-9_-]+(?:=[^\s"']*)?)|(\b(?:GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b)|(\b(?:curl|git|npm|npx|pnpm|yarn|pip|python|python3|node|docker|kubectl|aws|az|gcloud|brew|cargo|go|rustc|deno|bun|sudo|cat|grep|cd|ls|mkdir|rm|touch|chmod|chown|echo|export|set|source|sh|bash|zsh)\b)|(\b\d+(?:\.\d+)?\b)|(\\\s*$)/g;
+
+  const nodes: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = tokenRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(text.slice(lastIndex, match.index));
+    }
+
+    const [
+      full,
+      url,
+      quotedStr,
+      ,
+      ,
+      envVar,
+      flag,
+      httpMethod,
+      cliCmd,
+      num,
+      trailingSlash,
+    ] = match;
+
+    if (url) {
+      nodes.push(
+        <span key={nodes.length} className="t-url">
+          {url}
+        </span>
+      );
+    } else if (quotedStr) {
+      if (
+        (quotedStr.startsWith("'{") && quotedStr.endsWith("}'")) ||
+        (quotedStr.startsWith('"{') && quotedStr.endsWith('}"'))
+      ) {
+        const quoteChar = quotedStr[0];
+        const inner = quotedStr.slice(1, -1);
+        nodes.push(
+          <span key={`${nodes.length}-q1`} className="t-str">
+            {quoteChar}
+          </span>,
+          ...colorizeJsonString(inner),
+          <span key={`${nodes.length}-q2`} className="t-str">
+            {quoteChar}
+          </span>
+        );
+      } else {
+        nodes.push(
+          <span key={nodes.length} className="t-str">
+            {quotedStr}
+          </span>
+        );
+      }
+    } else if (envVar) {
+      nodes.push(
+        <span key={nodes.length} className="t-var">
+          {envVar}
+        </span>
+      );
+    } else if (flag) {
+      nodes.push(
+        <span key={nodes.length} className="t-flag">
+          {flag}
+        </span>
+      );
+    } else if (httpMethod) {
+      nodes.push(
+        <span key={nodes.length} className="t-method">
+          {httpMethod}
+        </span>
+      );
+    } else if (cliCmd) {
+      nodes.push(
+        <span key={nodes.length} className="t-cmd">
+          {cliCmd}
+        </span>
+      );
+    } else if (num) {
+      nodes.push(
+        <span key={nodes.length} className="t-num">
+          {num}
+        </span>
+      );
+    } else if (trailingSlash) {
+      nodes.push(
+        <span key={nodes.length} className="t-slash">
+          {trailingSlash}
+        </span>
+      );
+    } else {
+      nodes.push(full);
+    }
+
+    lastIndex = tokenRegex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    nodes.push(text.slice(lastIndex));
+  }
+
+  return nodes.length > 0 ? nodes : text;
+}
+
 function RenderTerminal({ block, theme = "light" }: { block: TerminalBlock; theme?: string }) {
   const cleanedLines = sanitizeTerminalLines(block?.lines);
 
@@ -333,7 +525,6 @@ function RenderTerminal({ block, theme = "light" }: { block: TerminalBlock; them
         {cleanedLines.map((line, idx) => {
           const isCommand = line.kind === "command";
           const isContinuation = line.kind === "continuation";
-          const isComment = line.kind === "comment";
 
           return (
             <div
@@ -346,12 +537,8 @@ function RenderTerminal({ block, theme = "light" }: { block: TerminalBlock; them
               {isContinuation && (
                 <span className="terminal-prompt text-emerald-500/50 select-none">&gt;</span>
               )}
-              <span
-                className={`terminal-content ${
-                  isCommand ? "terminal-cmd" : isComment ? "terminal-comment" : "terminal-stdout"
-                }`}
-              >
-                {line.text}
+              <span className="terminal-content">
+                {colorizeTerminalLine(line.text, line.kind)}
               </span>
             </div>
           );
