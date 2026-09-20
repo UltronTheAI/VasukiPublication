@@ -13,9 +13,27 @@ interface VasukiBookPageProps {
   className?: string;
 }
 
+function isHexDark(hex?: string | null): boolean {
+  if (!hex || typeof hex !== "string") return false;
+  const clean = hex.replace("#", "").trim();
+  if (clean.length === 3) {
+    const r = parseInt(clean[0] + clean[0], 16);
+    const g = parseInt(clean[1] + clean[1], 16);
+    const b = parseInt(clean[2] + clean[2], 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 < 128;
+  }
+  if (clean.length === 6) {
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 < 128;
+  }
+  return false;
+}
+
 /**
  * High-fidelity VasukiBookPage renderer reproducing exact VasukiSquare layout,
- * typography, dual-mode themes, and component styling ("ditto copy").
+ * typography, dynamic chapter & page background colors, and MongoDB icons.
  */
 export function VasukiBookPage({
   page,
@@ -23,13 +41,65 @@ export function VasukiBookPage({
   themeOverride,
   className = "",
 }: VasukiBookPageProps) {
-  // Determine effective theme
+  const pageRaw = page as unknown as Record<string, unknown>;
+  const rawStyle = (page.style || {}) as Record<string, unknown>;
+
+  // 1. Resolve Dynamic MongoDB Page & Chapter Colors
+  const customBg =
+    (rawStyle.background_color as string) ||
+    (rawStyle.bg_color as string) ||
+    (rawStyle.backgroundColor as string) ||
+    (pageRaw.background_color as string) ||
+    (pageRaw.bg_color as string) ||
+    null;
+
+  const customAccent =
+    (rawStyle.accent_color as string) ||
+    (rawStyle.accentColor as string) ||
+    (pageRaw.accent_color as string) ||
+    (pageRaw.accent as string) ||
+    null;
+
+  const customTextColor =
+    (rawStyle.text_color as string) ||
+    (rawStyle.textColor as string) ||
+    (pageRaw.text_color as string) ||
+    null;
+
+  const customTextMuted =
+    (rawStyle.text_muted as string) ||
+    (rawStyle.textMuted as string) ||
+    (pageRaw.text_muted as string) ||
+    null;
+
+  const customBorderColor =
+    (rawStyle.border_color as string) ||
+    (rawStyle.borderColor as string) ||
+    (pageRaw.border_color as string) ||
+    null;
+
+  const customFont =
+    (rawStyle.font_family as string) ||
+    (rawStyle.fontFamily as string) ||
+    (pageRaw.font_family as string) ||
+    null;
+
+  // 2. Resolve Dynamic MongoDB Page & Chapter Icons
+  const rawContent = (page.content || {}) as Record<string, unknown>;
+  const pageIcon: string | null =
+    (typeof page.icon === "string" && page.icon ? page.icon : null) ||
+    (typeof pageRaw.chapter_icon === "string" && pageRaw.chapter_icon ? (pageRaw.chapter_icon as string) : null) ||
+    (typeof rawContent.icon === "string" && rawContent.icon ? (rawContent.icon as string) : null) ||
+    (typeof rawContent.chapter_icon === "string" && rawContent.chapter_icon ? (rawContent.chapter_icon as string) : null) ||
+    null;
+
+  // 3. Determine Effective Theme (Auto-detect dark bg from MongoDB if not explicit)
   const effectiveTheme =
     themeOverride === "dark" || themeOverride === "light"
       ? themeOverride
       : (page.style?.theme as "light" | "dark") ||
         (page.theme as "light" | "dark") ||
-        "light";
+        (customBg ? (isHexDark(customBg) ? "dark" : "light") : "light");
 
   const isCover =
     page.page_type === "cover" ||
@@ -81,13 +151,64 @@ export function VasukiBookPage({
 
   const hideHeaderFooter = isCover || isChapterOpener || isThankYou;
 
+  // Build Comprehensive Dynamic Inline Style Layer for full MongoDB fidelity
+  const computedPageStyle: React.CSSProperties = {
+    ...(customBg
+      ? {
+          backgroundColor: customBg,
+          ["--theme-bg" as string]: customBg,
+          ["--color-canvas" as string]: customBg,
+          ["--color-canvas-dark" as string]: customBg,
+        }
+      : {}),
+    ...(customAccent
+      ? {
+          ["--theme-accent" as string]: customAccent,
+          ["--color-brand-green" as string]: customAccent,
+          ["--color-primary" as string]: customAccent,
+        }
+      : {}),
+    ...(customTextColor
+      ? {
+          color: customTextColor,
+          ["--theme-text" as string]: customTextColor,
+          ["--text-primary" as string]: customTextColor,
+          ["--text-primary-dark" as string]: customTextColor,
+        }
+      : {}),
+    ...(customTextMuted
+      ? {
+          ["--theme-text-muted" as string]: customTextMuted,
+          ["--theme-text-secondary" as string]: customTextMuted,
+        }
+      : {}),
+    ...(customBorderColor
+      ? {
+          borderColor: customBorderColor,
+          ["--theme-border" as string]: customBorderColor,
+        }
+      : {}),
+    ...(customFont
+      ? {
+          fontFamily: customFont,
+        }
+      : {}),
+  };
+
   return (
     <div className={`vasuki-book-root w-full h-full flex items-center justify-center select-text ${className}`}>
       <div
         className={`page theme-${effectiveTheme} layout-${layoutType}`}
         data-page-number={page.page_number}
-        style={page.style ? ({ ...page.style } as React.CSSProperties) : undefined}
+        style={computedPageStyle}
       >
+        {/* Subtle Decorative Watermark Icon from MongoDB */}
+        {pageIcon && !isCover && (
+          <div className="decorative-watermark-icon pos-bottom-right" aria-hidden="true">
+            <VasukiIcon name={pageIcon} size={140} />
+          </div>
+        )}
+
         <div className="page-safe-content">
           {/* =========================================================================
               1. PAGE HEADER (Hidden on Cover, Chapter Opener, Thank You)
@@ -95,16 +216,25 @@ export function VasukiBookPage({
           {!hideHeaderFooter && (
             <header className="page-header">
               <span
-                className="header-chapter truncate"
+                className="header-chapter truncate flex items-center gap-1.5"
                 title={
                   page.chapter_number
                     ? `Chapter ${page.chapter_number}: ${page.chapter_title || ""}`
                     : page.chapter_title || ""
                 }
               >
-                {page.chapter_number
-                  ? `Chapter ${page.chapter_number}: ${page.chapter_title || ""}`
-                  : page.chapter_title || ""}
+                {pageIcon && (
+                  <VasukiIcon
+                    name={pageIcon}
+                    size={13}
+                    className="shrink-0 text-[var(--theme-accent,#00ed64)]"
+                  />
+                )}
+                <span className="truncate">
+                  {page.chapter_number
+                    ? `Chapter ${page.chapter_number}: ${page.chapter_title || ""}`
+                    : page.chapter_title || ""}
+                </span>
               </span>
               <span
                 className="header-topic truncate"
@@ -344,7 +474,7 @@ export function VasukiBookPage({
             {!isCover && isChapterOpener && (
               <div className="chapter-opener-block">
                 <div className="chapter-icon">
-                  <VasukiIcon name={page.icon || "Sparkles"} size={56} />
+                  <VasukiIcon name={pageIcon || "Sparkles"} size={56} />
                 </div>
                 <div className="chapter-num">
                   {page.chapter_number ? `Chapter ${page.chapter_number}` : "Chapter"}
@@ -404,7 +534,7 @@ export function VasukiBookPage({
                 </div>
                 <div className="thank-you-body">
                   <div className="thank-you-icon">
-                    <VasukiIcon name={page.icon || "CheckCircle2"} size={48} />
+                    <VasukiIcon name={pageIcon || "CheckCircle2"} size={48} />
                   </div>
                   <div className="thank-you-divider" />
                   <h1 className="thank-you-title">
