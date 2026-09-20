@@ -88,10 +88,12 @@ export function ReaderContainer({
 
     const cached = loadPagesFromBrowserCache(bookSlug);
     if (cached && Object.keys(cached).length > 0) {
-      setPageCache((prev) => {
-        const merged = { ...cached, ...prev };
-        savePagesToBrowserCache(bookSlug, merged);
-        return merged;
+      queueMicrotask(() => {
+        setPageCache((prev) => {
+          const merged = { ...cached, ...prev };
+          savePagesToBrowserCache(bookSlug, merged);
+          return merged;
+        });
       });
     } else if (initialPages.length > 0) {
       savePagesToBrowserCache(bookSlug, initialPages);
@@ -638,7 +640,11 @@ export function ReaderContainer({
               }`}
             >
               {leftPageData ? (
-                <VasukiBookPage page={leftPageData} book={book} />
+                <VasukiBookPage
+                  page={leftPageData}
+                  book={book}
+                  nextPage={rightPageData || pageCache[effectiveLeftPageNum + 1] || null}
+                />
               ) : (
                 <div className="vasuki-book-root w-full h-full flex items-center justify-center">
                   <div className="vasuki-page-canvas bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm w-full h-full aspect-[210/297]">
@@ -657,7 +663,11 @@ export function ReaderContainer({
             {/* Right Page Slot (Spread mode only on large screens when not on Cover or standalone last page) */}
             {rightPageData && (
               <div className="hidden xl:flex h-full w-auto max-w-full max-h-[calc(100dvh-5.5rem)] aspect-[210/297] items-center justify-center min-w-0 min-h-0 shrink book-page-slot-right">
-                <VasukiBookPage page={rightPageData} book={book} />
+                <VasukiBookPage
+                  page={rightPageData}
+                  book={book}
+                  nextPage={effectiveRightPageNum ? pageCache[effectiveRightPageNum + 1] || null : null}
+                />
               </div>
             )}
           </div>

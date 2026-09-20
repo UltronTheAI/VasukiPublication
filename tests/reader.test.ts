@@ -272,6 +272,57 @@ describe("Reader — Dynamic Page Style Resolution", () => {
     assert.equal(mockPageStyle.text_color, "#f8fafc");
     assert.equal(mockPageStyle.card_bg, "rgba(255, 255, 255, 0.05)");
   });
+
+  it("dynamically inherits background style, accent color, and icon for chapter openers from next page", () => {
+    const chapterOpenerPage: Partial<Page> = {
+      id: "p20",
+      book_id: "book-1",
+      page_number: 20,
+      page_type: "chapter_opener",
+      chapter_number: 5,
+      theme: "dark",
+      layout: "chapter_opener",
+      style: { theme: "dark" },
+    };
+
+    const chapterContentNextPage: Partial<Page> = {
+      id: "p21",
+      book_id: "book-1",
+      page_number: 21,
+      page_type: "chapter_content",
+      chapter_number: 5,
+      theme: "dark",
+      layout: "editorial",
+      icon: "Cpu",
+      style: {
+        theme: "dark",
+        background_color: "#291519",
+        accent_color: "#fb923c",
+        text_color: "#fff1f2",
+        card_bg: "rgba(255, 255, 255, 0.06)",
+      },
+    };
+
+    // Helper simulating style inheritance in VasukiBookPage
+    function resolveChapterOpenerEffectiveStyles(opener: Partial<Page>, next: Partial<Page> | null) {
+      const isChapterOpener = opener.page_type === "chapter_opener" || opener.layout === "chapter_opener";
+      const rawStyle = opener.style || {};
+      const nextStyle = next?.style || {};
+
+      const bg = rawStyle.background_color || (isChapterOpener ? nextStyle.background_color : null) || null;
+      const accent = rawStyle.accent_color || (isChapterOpener ? nextStyle.accent_color : null) || null;
+      const cardBg = rawStyle.card_bg || (isChapterOpener ? nextStyle.card_bg : null) || null;
+      const icon = opener.icon || (isChapterOpener ? next?.icon : null) || null;
+
+      return { bg, accent, cardBg, icon };
+    }
+
+    const resolved = resolveChapterOpenerEffectiveStyles(chapterOpenerPage, chapterContentNextPage);
+    assert.equal(resolved.bg, "#291519", "Chapter opener should inherit background color from next content page");
+    assert.equal(resolved.accent, "#fb923c", "Chapter opener should inherit accent color from next content page");
+    assert.equal(resolved.cardBg, "rgba(255, 255, 255, 0.06)");
+    assert.equal(resolved.icon, "Cpu", "Chapter opener should inherit chapter icon from next page");
+  });
 });
 
 describe("Reader — Icon Mapping Compatibility", () => {

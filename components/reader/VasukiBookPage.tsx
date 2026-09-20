@@ -8,7 +8,10 @@ import type { Page, Book } from "@/lib/types/publication";
 
 interface VasukiBookPageProps {
   page: Page;
-  book: Pick<Book, "title" | "subtitle" | "author" | "running_title" | "page_count">;
+  book: Pick<Book, "title" | "subtitle" | "author" | "running_title" | "page_count"> & {
+    chapters?: Book["chapters"];
+  };
+  nextPage?: Page | null;
   themeOverride?: "light" | "dark" | "sepia" | null;
   className?: string;
 }
@@ -44,13 +47,42 @@ function isHexDark(hex?: string | null): boolean {
 export function VasukiBookPage({
   page,
   book,
+  nextPage,
   themeOverride,
   className = "",
 }: VasukiBookPageProps) {
   const pageRaw = page as unknown as Record<string, unknown>;
   const rawStyle = (page.style || {}) as Record<string, unknown>;
+  const nextRaw = (nextPage as unknown as Record<string, unknown>) || {};
+  const nextStyle = ((nextPage?.style || {}) as Record<string, unknown>) || {};
+
+  const isCover =
+    page.page_type === "cover" ||
+    page.layout === "cover" ||
+    page.page_number === 1;
+
+  const isChapterOpener =
+    page.page_type === "chapter_opener" ||
+    page.layout === "chapter_opener" ||
+    page.page_type === "opener";
+
+  const currentChapterMeta =
+    page.chapter_number && book.chapters
+      ? book.chapters.find((c) => c.chapter_number === page.chapter_number)
+      : null;
 
   // 1. Resolve Dynamic MongoDB Page & Chapter Colors and Styles
+  const inheritedBg = isChapterOpener
+    ? (nextStyle.background_color as string) ||
+      (nextStyle.bg_color as string) ||
+      (nextStyle.backgroundColor as string) ||
+      (nextStyle.background as string) ||
+      (nextRaw.background_color as string) ||
+      (nextRaw.bg_color as string) ||
+      (nextRaw.background as string) ||
+      null
+    : null;
+
   const customBg =
     (rawStyle.background_color as string) ||
     (rawStyle.bg_color as string) ||
@@ -59,7 +91,17 @@ export function VasukiBookPage({
     (pageRaw.background_color as string) ||
     (pageRaw.bg_color as string) ||
     (pageRaw.background as string) ||
+    inheritedBg ||
     null;
+
+  const inheritedGradient = isChapterOpener
+    ? (nextStyle.background_gradient as string) ||
+      (nextStyle.gradient as string) ||
+      (nextStyle.bg_gradient as string) ||
+      (nextRaw.background_gradient as string) ||
+      (nextRaw.gradient as string) ||
+      null
+    : null;
 
   const customGradient =
     (rawStyle.background_gradient as string) ||
@@ -67,7 +109,17 @@ export function VasukiBookPage({
     (rawStyle.bg_gradient as string) ||
     (pageRaw.background_gradient as string) ||
     (pageRaw.gradient as string) ||
+    inheritedGradient ||
     null;
+
+  const inheritedAccent = isChapterOpener
+    ? (nextStyle.accent_color as string) ||
+      (nextStyle.accentColor as string) ||
+      (nextStyle.accent as string) ||
+      (nextRaw.accent_color as string) ||
+      (nextRaw.accent as string) ||
+      null
+    : null;
 
   const customAccent =
     (rawStyle.accent_color as string) ||
@@ -75,14 +127,33 @@ export function VasukiBookPage({
     (rawStyle.accent as string) ||
     (pageRaw.accent_color as string) ||
     (pageRaw.accent as string) ||
+    inheritedAccent ||
     null;
+
+  const inheritedAccentSoft = isChapterOpener
+    ? (nextStyle.accent_soft as string) ||
+      (nextStyle.accentSoft as string) ||
+      (nextStyle.accent_color_soft as string) ||
+      (nextRaw.accent_soft as string) ||
+      null
+    : null;
 
   const customAccentSoft =
     (rawStyle.accent_soft as string) ||
     (rawStyle.accentSoft as string) ||
     (rawStyle.accent_color_soft as string) ||
     (pageRaw.accent_soft as string) ||
+    inheritedAccentSoft ||
     null;
+
+  const inheritedTextColor = isChapterOpener
+    ? (nextStyle.text_color as string) ||
+      (nextStyle.textColor as string) ||
+      (nextStyle.color as string) ||
+      (nextRaw.text_color as string) ||
+      (nextRaw.color as string) ||
+      null
+    : null;
 
   const customTextColor =
     (rawStyle.text_color as string) ||
@@ -90,7 +161,17 @@ export function VasukiBookPage({
     (rawStyle.color as string) ||
     (pageRaw.text_color as string) ||
     (pageRaw.color as string) ||
+    inheritedTextColor ||
     null;
+
+  const inheritedTextMuted = isChapterOpener
+    ? (nextStyle.text_muted as string) ||
+      (nextStyle.textMuted as string) ||
+      (nextStyle.secondary_color as string) ||
+      (nextStyle.text_secondary as string) ||
+      (nextRaw.text_muted as string) ||
+      null
+    : null;
 
   const customTextMuted =
     (rawStyle.text_muted as string) ||
@@ -98,7 +179,17 @@ export function VasukiBookPage({
     (rawStyle.secondary_color as string) ||
     (rawStyle.text_secondary as string) ||
     (pageRaw.text_muted as string) ||
+    inheritedTextMuted ||
     null;
+
+  const inheritedBorderColor = isChapterOpener
+    ? (nextStyle.border_color as string) ||
+      (nextStyle.borderColor as string) ||
+      (nextStyle.border as string) ||
+      (nextRaw.border_color as string) ||
+      (nextRaw.border as string) ||
+      null
+    : null;
 
   const customBorderColor =
     (rawStyle.border_color as string) ||
@@ -106,14 +197,34 @@ export function VasukiBookPage({
     (rawStyle.border as string) ||
     (pageRaw.border_color as string) ||
     (pageRaw.border as string) ||
+    inheritedBorderColor ||
     null;
+
+  const inheritedBorderStrong = isChapterOpener
+    ? (nextStyle.border_strong as string) ||
+      (nextStyle.borderStrong as string) ||
+      (nextStyle.border_color_strong as string) ||
+      (nextRaw.border_strong as string) ||
+      null
+    : null;
 
   const customBorderStrong =
     (rawStyle.border_strong as string) ||
     (rawStyle.borderStrong as string) ||
     (rawStyle.border_color_strong as string) ||
     (pageRaw.border_strong as string) ||
+    inheritedBorderStrong ||
     null;
+
+  const inheritedCardBg = isChapterOpener
+    ? (nextStyle.card_bg as string) ||
+      (nextStyle.card_background as string) ||
+      (nextStyle.cardBg as string) ||
+      (nextStyle.surface as string) ||
+      (nextStyle.surface_color as string) ||
+      (nextRaw.card_bg as string) ||
+      null
+    : null;
 
   const customCardBg =
     (rawStyle.card_bg as string) ||
@@ -122,13 +233,31 @@ export function VasukiBookPage({
     (rawStyle.surface as string) ||
     (rawStyle.surface_color as string) ||
     (pageRaw.card_bg as string) ||
+    inheritedCardBg ||
     null;
+
+  const inheritedDecorative = isChapterOpener
+    ? (nextStyle.decorative_color as string) ||
+      (nextStyle.decorative as string) ||
+      (nextRaw.decorative_color as string) ||
+      null
+    : null;
 
   const customDecorative =
     (rawStyle.decorative_color as string) ||
     (rawStyle.decorative as string) ||
     (pageRaw.decorative_color as string) ||
+    inheritedDecorative ||
     null;
+
+  const inheritedFont = isChapterOpener
+    ? (nextStyle.font_family as string) ||
+      (nextStyle.fontFamily as string) ||
+      (nextStyle.font as string) ||
+      (nextRaw.font_family as string) ||
+      (nextRaw.font as string) ||
+      null
+    : null;
 
   const customFont =
     (rawStyle.font_family as string) ||
@@ -136,6 +265,7 @@ export function VasukiBookPage({
     (rawStyle.font as string) ||
     (pageRaw.font_family as string) ||
     (pageRaw.font as string) ||
+    inheritedFont ||
     null;
 
   // 2. Resolve Dynamic MongoDB Page & Chapter Icons
@@ -148,11 +278,19 @@ export function VasukiBookPage({
   }
 
   const rawContent = (page.content || {}) as Record<string, unknown>;
+  const inheritedIcon = isChapterOpener
+    ? (typeof nextPage?.icon === "string" && nextPage.icon ? nextPage.icon : null) ||
+      (typeof nextRaw?.chapter_icon === "string" && nextRaw.chapter_icon ? (nextRaw.chapter_icon as string) : null) ||
+      (typeof currentChapterMeta?.icon === "string" && currentChapterMeta.icon ? currentChapterMeta.icon : null) ||
+      null
+    : null;
+
   const pageIcon: string | null =
     (typeof page.icon === "string" && page.icon ? page.icon : null) ||
     (typeof pageRaw.chapter_icon === "string" && pageRaw.chapter_icon ? (pageRaw.chapter_icon as string) : null) ||
     (typeof rawContent.icon === "string" && rawContent.icon ? (rawContent.icon as string) : null) ||
     (typeof rawContent.chapter_icon === "string" && rawContent.chapter_icon ? (rawContent.chapter_icon as string) : null) ||
+    inheritedIcon ||
     htmlIcon ||
     null;
 
@@ -162,17 +300,10 @@ export function VasukiBookPage({
       ? themeOverride
       : (page.style?.theme as "light" | "dark") ||
         (page.theme as "light" | "dark") ||
+        (nextPage?.style?.theme as "light" | "dark") ||
+        (nextPage?.theme as "light" | "dark") ||
+        (currentChapterMeta?.theme as "light" | "dark") ||
         (customBg ? (isHexDark(customBg) ? "dark" : "light") : "light");
-
-  const isCover =
-    page.page_type === "cover" ||
-    page.layout === "cover" ||
-    page.page_number === 1;
-
-  const isChapterOpener =
-    page.page_type === "chapter_opener" ||
-    page.layout === "chapter_opener" ||
-    page.page_type === "opener";
 
   const isTitlePage =
     !isCover &&

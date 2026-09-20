@@ -745,6 +745,7 @@ pre, code, table, .component-code-block, .component-terminal-window, .component-
   display: flex;
   justify-content: center;
   align-items: center;
+  color: var(--theme-accent, #00ed64);
 }
 
 .layout-chapter_opener .chapter-icon svg {
