@@ -725,6 +725,7 @@
 .page.theme-dark {
   background-color: var(--color-canvas-dark);
   color: var(--text-primary-dark, #ffffff);
+  color: var(--text-primary-dark, #ffffff) !important;
   --theme-bg: var(--color-canvas-dark);
   --theme-text: #ffffff;
   --theme-text-secondary: #e2e8f0;
@@ -744,9 +745,29 @@
 .page.theme-dark th,
 .page.theme-dark blockquote,
 .page.theme-dark .callout-content,
+.page.theme-dark .callout-content p,
 .page.theme-dark .content-body,
+.page.theme-dark .content-body p,
 .page.theme-dark .typo-lead,
 .page.theme-dark .typo-subtitle {
+.page.theme-dark .typo-subtitle,
+.page.theme-dark .typo-body-md,
+.page.theme-dark .typo-body-sm,
+.page.theme-dark .comparison-list li,
+.page.theme-dark .timeline-desc,
+.page.theme-dark .checklist-text,
+.page.theme-dark .step-desc,
+.page.theme-dark .def-body p,
+.page.theme-dark .exercise-objective,
+.page.theme-dark .exercise-instructions,
+.page.theme-dark .exercise-instructions li,
+.page.theme-dark .icon-item-content p,
+.page.theme-dark .stat-description,
+.page.theme-dark .ack-body,
+.page.theme-dark .copyright-rights-notice,
+.page.theme-dark .copyright-restriction-box,
+.page.theme-dark .thank-you-statement,
+.page.theme-dark .thank-you-next-steps p {
   color: var(--theme-text-secondary, #e2e8f0) !important;
 }
 
@@ -757,7 +778,92 @@
 .page.theme-dark h5,
 .page.theme-dark h6,
 .page.theme-dark strong {
+.page.theme-dark strong,
+.page.theme-dark .content-headline,
+.page.theme-dark .chapter-title,
+.page.theme-dark .title-page-title,
+.page.theme-dark .thank-you-title,
+.page.theme-dark .copyright-title,
+.page.theme-dark .ack-title,
+.page.theme-dark .toc-title,
+.page.theme-dark .toc-row-title,
+.page.theme-dark .comparison-title,
+.page.theme-dark .timeline-title,
+.page.theme-dark .timeline-heading,
+.page.theme-dark .checklist-title,
+.page.theme-dark .step-block-title,
+.page.theme-dark .step-heading,
+.page.theme-dark .def-term,
+.page.theme-dark .exercise-title,
+.page.theme-dark .table-caption,
+.page.theme-dark .stat-label,
+.page.theme-dark .source-title,
+.page.theme-dark .source-title a,
+.page.theme-dark .icon-item-content strong,
+.page.theme-dark .callout-title,
+.page.theme-dark .opener-title,
+.page.theme-dark .ack-signature-name {
   color: var(--theme-text, #ffffff) !important;
+}
+
+.page.theme-dark .quote-author,
+.page.theme-dark .code-caption,
+.page.theme-dark .diagram-caption,
+.page.theme-dark .def-pronunciation,
+.page.theme-dark .def-pos,
+.page.theme-dark .def-example,
+.page.theme-dark .starter-label,
+.page.theme-dark .toc-subtitle,
+.page.theme-dark .copyright-subtitle,
+.page.theme-dark .copyright-footer-legal,
+.page.theme-dark .ack-signature-affil,
+.page.theme-dark .thank-you-footer,
+.page.theme-dark .source-header,
+.page.theme-dark .source-domain,
+.page.theme-dark .page-header,
+.page.theme-dark .page-footer,
+.page.theme-dark .header-chapter,
+.page.theme-dark .header-topic,
+.page.theme-dark .footer-title,
+.page.theme-dark .footer-page-num,
+.page.theme-dark .typo-caption,
+.page.theme-dark .typo-micro {
+  color: var(--theme-text-muted, #cbd5e1) !important;
+}
+
+.page.theme-dark .component-card,
+.page.theme-dark .component-table,
+.page.theme-dark .component-source-card,
+.page.theme-dark .component-callout,
+.page.theme-dark .component-chart-container,
+.page.theme-dark .diagram-frame,
+.page.theme-dark .component-statistic,
+.page.theme-dark .icon-item,
+.page.theme-dark .component-comparison,
+.page.theme-dark .component-timeline,
+.page.theme-dark .component-checklist,
+.page.theme-dark .step-card,
+.page.theme-dark .component-definition,
+.page.theme-dark .component-exercise,
+.page.theme-dark .card-box,
+.page.theme-dark .thank-you-next-steps,
+.page.theme-dark .copyright-meta-grid,
+.page.theme-dark .copyright-restriction-box,
+.page.theme-dark .rich-kbd {
+  background-color: var(--theme-card-bg, rgba(255, 255, 255, 0.06)) !important;
+  border-color: var(--theme-border, rgba(255, 255, 255, 0.14)) !important;
+  color: var(--theme-text-secondary, #e2e8f0) !important;
+}
+
+.page.theme-dark .icon-item-badge {
+  background-color: var(--theme-border, rgba(255, 255, 255, 0.12)) !important;
+  color: var(--theme-accent, #00ed64) !important;
+}
+
+.page.theme-dark .rich-code {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: var(--theme-accent, #00ed64) !important;
 }
 
 /* Header & Footer Chrome (High-Contrast, Clean Layout, Zero Overflow) */
