@@ -4,6 +4,7 @@ import "./globals.css";
 import "@/styles/vasuki-book.css";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { publicEnv } from "@/lib/env";
 
 const geistSans = Geist({
@@ -98,6 +99,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${plusJakartaSans.variable} ${inter.variable} ${jetbrainsMono.variable} ${newsreader.variable} h-full antialiased`}
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-white text-ink font-sans selection:bg-ink selection:text-white">
+        <GoogleAnalytics gaId={publicEnv.NEXT_PUBLIC_GA_ID} />
         <SiteHeader />
         <main className="flex-1 w-full">{children}</main>
         <SiteFooter />

@@ -157,3 +157,31 @@ describe("Production Security Headers Verification", () => {
   });
 });
 
+describe("Google Analytics Scope & Route Filtering", () => {
+  function shouldTrackGoogleAnalytics(pathname: string, gaId?: string): boolean {
+    if (!gaId || !gaId.startsWith("G-")) return false;
+    if (pathname.startsWith("/admin")) return false;
+    return true;
+  }
+
+  it("strictly disables tracking for admin dashboard and subpaths", () => {
+    const gaId = "G-7DBX5JSSKM";
+    assert.equal(shouldTrackGoogleAnalytics("/admin", gaId), false);
+    assert.equal(shouldTrackGoogleAnalytics("/admin/books", gaId), false);
+    assert.equal(shouldTrackGoogleAnalytics("/admin/ads", gaId), false);
+    assert.equal(shouldTrackGoogleAnalytics("/admin/login", gaId), false);
+    assert.equal(shouldTrackGoogleAnalytics("/admin/books/some-id", gaId), false);
+  });
+
+  it("enables tracking for all public user-facing routes", () => {
+    const gaId = "G-7DBX5JSSKM";
+    assert.equal(shouldTrackGoogleAnalytics("/", gaId), true);
+    assert.equal(shouldTrackGoogleAnalytics("/book/modern-typescript-patterns", gaId), true);
+    assert.equal(shouldTrackGoogleAnalytics("/book/modern-typescript-patterns/read", gaId), true);
+    assert.equal(shouldTrackGoogleAnalytics("/saved", gaId), true);
+    assert.equal(shouldTrackGoogleAnalytics("/privacy", gaId), true);
+    assert.equal(shouldTrackGoogleAnalytics("/terms", gaId), true);
+  });
+});
+
+

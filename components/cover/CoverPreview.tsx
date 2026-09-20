@@ -1,73 +1,6 @@
 import React from "react";
 import Image from "next/image";
 import type { Book, Cover, CoverDesignPlan } from "@/lib/types/publication";
-import { resolveVasukiIconName } from "@/lib/vasuki/icon-map";
-import {
-  Sparkles,
-  BookOpen,
-  Terminal,
-  Code,
-  Layers,
-  Database,
-  Cpu,
-  ShieldCheck,
-  Zap,
-  Compass,
-  GitBranch,
-  Workflow,
-  Network,
-  HardDrive,
-  CheckCircle,
-  TrendingUp,
-  BarChart3,
-  Clock,
-  Activity,
-  FileText,
-  Lightbulb,
-  Award,
-  Target,
-  Feather,
-  Bookmark,
-  File,
-  type LucideIcon,
-} from "lucide-react";
-
-const ICON_COMPONENTS: Record<string, LucideIcon> = {
-  Sparkles,
-  BookOpen,
-  Book: BookOpen,
-  Terminal,
-  Code,
-  Layers,
-  Database,
-  Cpu,
-  ShieldCheck,
-  Shield: ShieldCheck,
-  Zap,
-  Compass,
-  GitBranch,
-  Workflow,
-  Network,
-  HardDrive,
-  CheckCircle,
-  TrendingUp,
-  BarChart3,
-  Clock,
-  Activity,
-  FileText,
-  Lightbulb,
-  Award,
-  Target,
-  Feather,
-  Bookmark,
-  File,
-};
-
-function HeroIcon({ iconName, className }: { iconName?: string | null; className?: string }) {
-  const resolved = resolveVasukiIconName(iconName, "Sparkles");
-  const IconComponent = ICON_COMPONENTS[resolved] || Sparkles;
-  return <IconComponent className={className} />;
-}
 
 interface CoverPreviewProps {
   book: Book;
@@ -97,7 +30,6 @@ export function CoverPreview({
     design.category_badge || book.category || book.discovery?.category || "PRACTICAL GUIDE";
 
   const accentColor = design.accent_color || "#00ed64";
-  const heroIconName = design.hero_icon || "BookOpen";
 
   // Size styling mapping
   const sizeClasses = {

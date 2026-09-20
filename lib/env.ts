@@ -26,6 +26,7 @@ const serverEnvSchema = z.object({
 const publicEnvSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
   NEXT_PUBLIC_SITE_NAME: z.string().min(1).default("Vasuki Publication"),
+  NEXT_PUBLIC_GA_ID: z.string().default("G-7DBX5JSSKM"),
 });
 
 /**
@@ -74,6 +75,7 @@ function validatePublicEnv() {
   const result = publicEnvSchema.safeParse({
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_SITE_NAME: process.env.NEXT_PUBLIC_SITE_NAME,
+    NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
   });
 
   if (!result.success) {
@@ -84,6 +86,7 @@ function validatePublicEnv() {
     return publicEnvSchema.parse({
       NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
       NEXT_PUBLIC_SITE_NAME: "Vasuki Publication",
+      NEXT_PUBLIC_GA_ID: "G-7DBX5JSSKM",
     });
   }
 

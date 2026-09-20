@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -48,14 +48,9 @@ export function ReaderContainer({
   const [isTocOpen, setIsTocOpen] = useState<boolean>(false);
   const [flipDirection, setFlipDirection] = useState<"next" | "prev" | null>(null);
 
-  const [mounted, setMounted] = useState<boolean>(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const { isSaved, toggle } = useSavedBooks();
   const bookSlug = book.slug || book.id;
-  const isBookSaved = mounted ? isSaved(bookSlug) : false;
+  const isBookSaved = isSaved(bookSlug);
 
   // Client-side cache: Map of pageNumber -> Page
   const [pageCache, setPageCache] = useState<Record<number, Page>>(() => {
@@ -341,32 +336,35 @@ export function ReaderContainer({
   // ---------------------------------------------------------------------------
   // Accurate Cumulative & Database Chapter Page Ranges
   // ---------------------------------------------------------------------------
-  const chaptersWithPageRanges = React.useMemo(() => {
+  const chaptersWithPageRanges = useMemo(() => {
     let fallbackCursor = 1;
-    return (book.chapters || []).map((ch) => {
+    const result = [];
+    for (const ch of book.chapters || []) {
       const dbRange = chapterRanges?.[ch.chapter_number];
       if (
         dbRange &&
         typeof dbRange.start_page === "number" &&
         typeof dbRange.end_page === "number"
       ) {
-        return {
+        result.push({
           ...ch,
           startPage: dbRange.start_page,
           endPage: dbRange.end_page,
           page_count: dbRange.page_count,
-        };
+        });
+      } else {
+        const startPage = fallbackCursor;
+        const count = Math.max(1, ch.page_count || 1);
+        const endPage = startPage + count - 1;
+        fallbackCursor += count;
+        result.push({
+          ...ch,
+          startPage,
+          endPage,
+        });
       }
-      const startPage = fallbackCursor;
-      const count = Math.max(1, ch.page_count || 1);
-      const endPage = startPage + count - 1;
-      fallbackCursor += count;
-      return {
-        ...ch,
-        startPage,
-        endPage,
-      };
-    });
+    }
+    return result;
   }, [book.chapters, chapterRanges]);
 
   const isCoverActive =
