@@ -770,9 +770,11 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
   border: 1px solid var(--color-hairline-dark);
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(0, 30, 43, 0.25);
-  margin: 16px 0 !important;
+  margin: 12px 0 !important;
   max-width: 100%;
   width: 100%;
+  height: auto !important;
+  min-height: auto !important;
   box-sizing: border-box;
   flex-shrink: 0 !important;
 }
@@ -782,12 +784,12 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 16px;
+  padding: 8px 14px;
   background-color: #000c12;
   border-bottom: 1px solid var(--color-hairline-dark);
   font-family: var(--font-code);
   font-size: 11px;
-  min-height: 40px;
+  min-height: 36px;
   box-sizing: border-box;
   flex-shrink: 0;
 }
@@ -836,11 +838,12 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
 }
 
 .terminal-body {
-  padding: 18px 20px !important;
+  padding: 14px 18px !important;
   font-family: var(--font-code);
-  font-size: 13px !important;
-  line-height: 1.7 !important;
-  min-height: 140px !important;
+  font-size: 12.5px !important;
+  line-height: 1.6 !important;
+  height: auto !important;
+  min-height: auto !important;
   max-height: 520px !important;
   overflow-y: auto !important;
   overflow-x: auto !important;
@@ -851,11 +854,15 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   overflow-wrap: anywhere;
   word-break: break-word;
   white-space: pre-wrap;
   min-width: 0;
+}
+
+.terminal-line:last-child {
+  margin-bottom: 0;
 }
 
 .terminal-line.is-continuation {
