@@ -85,9 +85,10 @@ export default async function BookReaderPage({
   }
 
   const bookId = book.id || book._id || "";
-  // Fetch initial 2 pages and chapter ranges for precise Table of Contents navigation
+  // Fetch initial 10-page batch window and chapter ranges for instant rendering & Table of Contents
+  const batchStart = Math.max(1, Math.floor((initialPageNumber - 1) / 10) * 10 + 1);
   const [initialPages, chapterRanges] = await Promise.all([
-    getBookPages(bookId, initialPageNumber, 2),
+    getBookPages(bookId, batchStart, 10),
     getBookChapterRanges(bookId),
   ]);
 

@@ -25,10 +25,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const { searchParams } = new URL(request.url);
     const rawPage = parseInt(searchParams.get("page") || "1", 10);
-    const rawLimit = parseInt(searchParams.get("limit") || "2", 10);
+    const rawLimit = parseInt(searchParams.get("limit") || "10", 10);
 
     const pageNum = Number.isFinite(rawPage) && rawPage >= 1 ? rawPage : 1;
-    const limit = Number.isFinite(rawLimit) && rawLimit >= 1 ? Math.min(rawLimit, 10) : 2;
+    const limit = Number.isFinite(rawLimit) && rawLimit >= 1 ? Math.min(rawLimit, 20) : 10;
 
     const bookId = book.id || book._id || "";
     const pages = await getBookPages(bookId, pageNum, limit);

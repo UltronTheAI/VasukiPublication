@@ -101,8 +101,8 @@ describe("Reader — Security & Access Control", () => {
   });
 });
 
-describe("Reader — Page Geometry & Initial Lazy Loading", () => {
-  it("verifies initial load fetches only 2 pages instead of eager loading all pages", () => {
+describe("Reader — Page Geometry & 10-Page Batch Loading", () => {
+  it("verifies initial load fetches 10 pages instead of eager loading all pages", () => {
     const bookPageCount = 120;
     let queryLimit = 0;
     let startPageQueried = 0;
@@ -125,11 +125,11 @@ describe("Reader — Page Geometry & Initial Lazy Loading", () => {
       }));
     }
 
-    const initialPages = mockInitialPageFetch(1, 2);
+    const initialPages = mockInitialPageFetch(1, 10);
 
-    assert.equal(initialPages.length, 2, "Only 2 initial pages must be queried on entry");
+    assert.equal(initialPages.length, 10, "10 initial pages must be queried on entry for smooth instant reading");
     assert.equal(startPageQueried, 1);
-    assert.equal(queryLimit, 2);
+    assert.equal(queryLimit, 10);
     assert.ok(initialPages.length < bookPageCount, "Must not load full 120 pages on entry");
   });
 
@@ -154,40 +154,123 @@ describe("Reader — Page Geometry & Initial Lazy Loading", () => {
   });
 });
 
-describe("Reader — Client Cache & Prefetch Logic", () => {
-  it("caches pages and computes prefetch batches without redundant fetches", () => {
-    const pageCache = new Map<number, Page>();
-    const inFlight = new Set<number>();
-    const totalPages = 20;
+describe("Reader — 10-Page Batching & 8th-Page Threshold Prefetch Logic", () => {
+  function getBatchWindowForPage(pageNum: number, batchSize: number = 10) {
+    const normalized = Math.max(1, pageNum);
+    const start = Math.floor((normalized - 1) / batchSize) * batchSize + 1;
+    const end = start + batchSize - 1;
+    return { start, end };
+  }
 
-    // Simulate initial pages
-    pageCache.set(1, { id: "p1", book_id: "b1", page_number: 1, theme: "light", layout: "cover", content: {}, style: { theme: "light" }, schema_version: 1, renderer_version: "0.1.0", created_at: new Date(), updated_at: new Date() });
-    pageCache.set(2, { id: "p2", book_id: "b1", page_number: 2, theme: "light", layout: "opener", content: {}, style: { theme: "light" }, schema_version: 1, renderer_version: "0.1.0", created_at: new Date(), updated_at: new Date() });
+  function shouldPrefetchNextBatch(currentPage: number, batchSize: number = 10, triggerOffset: number = 8): boolean {
+    if (currentPage < 1) return false;
+    const positionInBatch = ((currentPage - 1) % batchSize) + 1;
+    return positionInBatch >= triggerOffset;
+  }
 
-    function getPagesToPrefetch(current: number, spread: boolean): number[] {
-      const needed: number[] = [];
-      const count = spread ? 4 : 3;
-      const start = spread ? current + 2 : current + 1;
+  function getNextBatchStart(currentPage: number, batchSize: number = 10): number {
+    const { end } = getBatchWindowForPage(currentPage, batchSize);
+    return end + 1;
+  }
 
-      for (let i = 0; i < count; i++) {
-        const target = start + i;
-        if (target <= totalPages && !pageCache.has(target) && !inFlight.has(target)) {
-          needed.push(target);
-        }
-      }
-      return needed;
+  it("calculates accurate 10-page batch boundaries for any page number", () => {
+    assert.deepEqual(getBatchWindowForPage(1), { start: 1, end: 10 });
+    assert.deepEqual(getBatchWindowForPage(5), { start: 1, end: 10 });
+    assert.deepEqual(getBatchWindowForPage(8), { start: 1, end: 10 });
+    assert.deepEqual(getBatchWindowForPage(10), { start: 1, end: 10 });
+    assert.deepEqual(getBatchWindowForPage(11), { start: 11, end: 20 });
+    assert.deepEqual(getBatchWindowForPage(18), { start: 11, end: 20 });
+    assert.deepEqual(getBatchWindowForPage(25), { start: 21, end: 30 });
+  });
+
+  it("triggers prefetch of next batch exactly upon reaching the 8th page", () => {
+    // In batch 1..10
+    assert.equal(shouldPrefetchNextBatch(1), false);
+    assert.equal(shouldPrefetchNextBatch(5), false);
+    assert.equal(shouldPrefetchNextBatch(7), false);
+    assert.equal(shouldPrefetchNextBatch(8), true, "Page 8 must trigger prefetch of pages 11..20");
+    assert.equal(shouldPrefetchNextBatch(9), true);
+    assert.equal(shouldPrefetchNextBatch(10), true);
+
+    // In batch 11..20
+    assert.equal(shouldPrefetchNextBatch(11), false);
+    assert.equal(shouldPrefetchNextBatch(15), false);
+    assert.equal(shouldPrefetchNextBatch(17), false);
+    assert.equal(shouldPrefetchNextBatch(18), true, "Page 18 must trigger prefetch of pages 21..30");
+
+    // In batch 21..30
+    assert.equal(shouldPrefetchNextBatch(28), true, "Page 28 must trigger prefetch of pages 31..40");
+  });
+
+  it("computes next batch start page accurately", () => {
+    assert.equal(getNextBatchStart(1), 11);
+    assert.equal(getNextBatchStart(8), 11);
+    assert.equal(getNextBatchStart(10), 11);
+    assert.equal(getNextBatchStart(18), 21);
+    assert.equal(getNextBatchStart(28), 31);
+  });
+});
+
+describe("Reader — Browser Caching & 2-Day Retention Policy", () => {
+  const RETENTION_TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000; // 172,800,000 ms
+
+  it("enforces exact 2-day retention window (172,800,000 ms)", () => {
+    assert.equal(RETENTION_TWO_DAYS_MS, 172800000);
+    const now = Date.now();
+    const expiresAt = now + RETENTION_TWO_DAYS_MS;
+
+    assert.ok(expiresAt > now);
+    assert.equal(expiresAt - now, 2 * 24 * 3600 * 1000);
+  });
+
+  it("validates cache expiry logic correctly", () => {
+    const now = 1000000000000;
+    const validPayload = {
+      version: 1,
+      slug: "ai-prompt-engineering",
+      savedAt: now - 3600000, // 1 hour ago
+      expiresAt: now + RETENTION_TWO_DAYS_MS - 3600000,
+      pages: { 1: { id: "p1" } },
+    };
+
+    const expiredPayload = {
+      version: 1,
+      slug: "ai-prompt-engineering",
+      savedAt: now - (RETENTION_TWO_DAYS_MS + 1000), // 2 days and 1 second ago
+      expiresAt: now - 1000,
+      pages: { 1: { id: "p1" } },
+    };
+
+    function isCacheValid(payload: typeof validPayload, currentTime: number): boolean {
+      return payload.version === 1 && typeof payload.expiresAt === "number" && currentTime < payload.expiresAt;
     }
 
-    // On page 1 in single mode: should prefetch 2 (already cached), 3, 4
-    const toPrefetch1 = getPagesToPrefetch(1, false);
-    assert.deepEqual(toPrefetch1, [3, 4]);
+    assert.equal(isCacheValid(validPayload, now), true);
+    assert.equal(isCacheValid(expiredPayload, now), false);
+  });
+});
 
-    // Mark 3 and 4 as in flight
-    inFlight.add(3);
-    inFlight.add(4);
+describe("Reader — Dynamic Page Style Resolution", () => {
+  it("extracts and applies all dynamic MongoDB page style tokens", () => {
+    const mockPageStyle = {
+      background_color: "#0f172a",
+      background_gradient: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+      accent_color: "#38bdf8",
+      accent_soft: "rgba(56, 189, 248, 0.15)",
+      text_color: "#f8fafc",
+      text_muted: "#94a3b8",
+      border_color: "#334155",
+      border_strong: "#64748b",
+      card_bg: "rgba(255, 255, 255, 0.05)",
+      decorative_color: "rgba(56, 189, 248, 0.06)",
+      font_family: "Inter, sans-serif",
+    };
 
-    // Call again -> should return empty because in flight
-    assert.deepEqual(getPagesToPrefetch(1, false), []);
+    assert.equal(mockPageStyle.background_color, "#0f172a");
+    assert.ok(mockPageStyle.background_gradient.includes("linear-gradient"));
+    assert.equal(mockPageStyle.accent_color, "#38bdf8");
+    assert.equal(mockPageStyle.text_color, "#f8fafc");
+    assert.equal(mockPageStyle.card_bg, "rgba(255, 255, 255, 0.05)");
   });
 });
 

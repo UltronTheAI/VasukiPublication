@@ -20,6 +20,14 @@ import {
 } from "lucide-react";
 import { VasukiBookPage } from "@/components/reader/VasukiBookPage";
 import { useSavedBooks } from "@/lib/hooks/useSavedBooks";
+import {
+  loadPagesFromBrowserCache,
+  savePagesToBrowserCache,
+  cleanExpiredBrowserPageCaches,
+  getBatchWindowForPage,
+  shouldPrefetchNextBatch,
+  getNextBatchStart,
+} from "@/lib/reader/reader-cache";
 import type { Book, Page } from "@/lib/types/publication";
 import type { ChapterRange } from "@/lib/repositories/pages";
 
@@ -71,6 +79,24 @@ export function ReaderContainer({
   const inFlightFetches = useRef<Set<number>>(new Set());
   const readerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
+
+  // ---------------------------------------------------------------------------
+  // 1. Initial Browser Storage Hydration (2-day retention policy)
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    cleanExpiredBrowserPageCaches();
+
+    const cached = loadPagesFromBrowserCache(bookSlug);
+    if (cached && Object.keys(cached).length > 0) {
+      setPageCache((prev) => {
+        const merged = { ...cached, ...prev };
+        savePagesToBrowserCache(bookSlug, merged);
+        return merged;
+      });
+    } else if (initialPages.length > 0) {
+      savePagesToBrowserCache(bookSlug, initialPages);
+    }
+  }, [bookSlug, initialPages]);
 
   // ---------------------------------------------------------------------------
   // Responsive spread mode default (Desktop vs Mobile)
@@ -125,77 +151,89 @@ export function ReaderContainer({
       : null;
 
   // ---------------------------------------------------------------------------
-  // Active page loader & Prefetch trigger
+  // Active 10-Page Batch Loader & 8th-Page Prefetch Trigger with 2-day cache
   // ---------------------------------------------------------------------------
   useEffect(() => {
     let cancelled = false;
 
-    async function loadPages() {
-      const targets: number[] = [effectiveLeftPageNum];
-      if (effectiveRightPageNum) {
-        targets.push(effectiveRightPageNum);
+    async function fetchBatch(startPage: number, limit: number = 10) {
+      if (startPage > totalPages || inFlightFetches.current.has(startPage) || cancelled) {
+        return;
       }
 
-      // Prefetch upcoming pages (next 2-4 pages)
-      const upcomingStart = effectiveRightPageNum ? effectiveRightPageNum + 1 : effectiveLeftPageNum + 1;
-      for (let i = 0; i < 3; i++) {
-        const p = upcomingStart + i;
-        if (p <= totalPages) {
-          targets.push(p);
+      // Check if all pages in this batch are already present in cache
+      const endPage = Math.min(startPage + limit - 1, totalPages);
+      let allCached = true;
+      for (let p = startPage; p <= endPage; p++) {
+        if (!pageCacheRef.current[p]) {
+          allCached = false;
+          break;
         }
       }
+      if (allCached) return;
 
-      // Prefetch previous pages
-      if (effectiveLeftPageNum > 1) {
-        targets.push(effectiveLeftPageNum - 1);
-        if (effectiveLeftPageNum > 2) {
-          targets.push(effectiveLeftPageNum - 2);
-        }
-      }
+      inFlightFetches.current.add(startPage);
 
-      for (const pageNum of targets) {
-        if (
-          pageCacheRef.current[pageNum] ||
-          inFlightFetches.current.has(pageNum) ||
-          cancelled
-        ) {
-          continue;
-        }
+      try {
+        const res = await fetch(
+          `/api/books/${encodeURIComponent(book.slug)}/pages?page=${startPage}&limit=${limit}`
+        );
+        if (!res.ok || cancelled) return;
 
-        inFlightFetches.current.add(pageNum);
-
-        try {
-          const res = await fetch(
-            `/api/books/${encodeURIComponent(book.slug)}/pages?page=${pageNum}&limit=2`
-          );
-          if (!res.ok || cancelled) continue;
-
-          const data = await res.json();
-          if (data.pages && Array.isArray(data.pages)) {
-            setPageCache((prev) => {
-              const next = { ...prev };
-              for (const p of data.pages) {
-                if (p && p.page_number) {
-                  next[p.page_number] = p;
-                }
+        const data = await res.json();
+        if (data.pages && Array.isArray(data.pages)) {
+          setPageCache((prev) => {
+            const next = { ...prev };
+            for (const p of data.pages) {
+              if (p && p.page_number) {
+                next[p.page_number] = p;
               }
-              return next;
-            });
-          }
-        } catch {
-          // prefetch errors ignored
-        } finally {
-          inFlightFetches.current.delete(pageNum);
+            }
+            savePagesToBrowserCache(book.slug, next);
+            return next;
+          });
         }
+      } catch {
+        // prefetch errors silently handled
+      } finally {
+        inFlightFetches.current.delete(startPage);
       }
     }
 
-    loadPages();
+    async function loadPagesAndPrefetch() {
+      // 1. Ensure current visible page batch (10 pages) is loaded
+      const leftBatch = getBatchWindowForPage(effectiveLeftPageNum, 10);
+      await fetchBatch(leftBatch.start, 10);
+
+      if (effectiveRightPageNum) {
+        const rightBatch = getBatchWindowForPage(effectiveRightPageNum, 10);
+        if (rightBatch.start !== leftBatch.start) {
+          await fetchBatch(rightBatch.start, 10);
+        }
+      }
+
+      // 2. Prefetch next 10 pages when user reaches 8th page of batch (e.g. 8, 18, 28, 38...)
+      if (shouldPrefetchNextBatch(currentPage, 10, 8)) {
+        const nextBatchStart = getNextBatchStart(currentPage, 10);
+        if (nextBatchStart <= totalPages) {
+          fetchBatch(nextBatchStart, 10);
+        }
+      }
+
+      // 3. Backward prefetch if user is reading early in current batch (e.g. page 11 or 12)
+      const positionInBatch = ((currentPage - 1) % 10) + 1;
+      if (positionInBatch <= 2 && leftBatch.start > 1) {
+        const prevBatchStart = Math.max(1, leftBatch.start - 10);
+        fetchBatch(prevBatchStart, 10);
+      }
+    }
+
+    loadPagesAndPrefetch();
 
     return () => {
       cancelled = true;
     };
-  }, [effectiveLeftPageNum, effectiveRightPageNum, totalPages, book.slug]);
+  }, [effectiveLeftPageNum, effectiveRightPageNum, currentPage, totalPages, book.slug]);
 
   // ---------------------------------------------------------------------------
   // Navigation Handlers

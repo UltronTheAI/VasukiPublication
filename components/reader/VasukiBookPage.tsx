@@ -50,44 +50,92 @@ export function VasukiBookPage({
   const pageRaw = page as unknown as Record<string, unknown>;
   const rawStyle = (page.style || {}) as Record<string, unknown>;
 
-  // 1. Resolve Dynamic MongoDB Page & Chapter Colors
+  // 1. Resolve Dynamic MongoDB Page & Chapter Colors and Styles
   const customBg =
     (rawStyle.background_color as string) ||
     (rawStyle.bg_color as string) ||
     (rawStyle.backgroundColor as string) ||
+    (rawStyle.background as string) ||
     (pageRaw.background_color as string) ||
     (pageRaw.bg_color as string) ||
+    (pageRaw.background as string) ||
+    null;
+
+  const customGradient =
+    (rawStyle.background_gradient as string) ||
+    (rawStyle.gradient as string) ||
+    (rawStyle.bg_gradient as string) ||
+    (pageRaw.background_gradient as string) ||
+    (pageRaw.gradient as string) ||
     null;
 
   const customAccent =
     (rawStyle.accent_color as string) ||
     (rawStyle.accentColor as string) ||
+    (rawStyle.accent as string) ||
     (pageRaw.accent_color as string) ||
     (pageRaw.accent as string) ||
+    null;
+
+  const customAccentSoft =
+    (rawStyle.accent_soft as string) ||
+    (rawStyle.accentSoft as string) ||
+    (rawStyle.accent_color_soft as string) ||
+    (pageRaw.accent_soft as string) ||
     null;
 
   const customTextColor =
     (rawStyle.text_color as string) ||
     (rawStyle.textColor as string) ||
+    (rawStyle.color as string) ||
     (pageRaw.text_color as string) ||
+    (pageRaw.color as string) ||
     null;
 
   const customTextMuted =
     (rawStyle.text_muted as string) ||
     (rawStyle.textMuted as string) ||
+    (rawStyle.secondary_color as string) ||
+    (rawStyle.text_secondary as string) ||
     (pageRaw.text_muted as string) ||
     null;
 
   const customBorderColor =
     (rawStyle.border_color as string) ||
     (rawStyle.borderColor as string) ||
+    (rawStyle.border as string) ||
     (pageRaw.border_color as string) ||
+    (pageRaw.border as string) ||
+    null;
+
+  const customBorderStrong =
+    (rawStyle.border_strong as string) ||
+    (rawStyle.borderStrong as string) ||
+    (rawStyle.border_color_strong as string) ||
+    (pageRaw.border_strong as string) ||
+    null;
+
+  const customCardBg =
+    (rawStyle.card_bg as string) ||
+    (rawStyle.card_background as string) ||
+    (rawStyle.cardBg as string) ||
+    (rawStyle.surface as string) ||
+    (rawStyle.surface_color as string) ||
+    (pageRaw.card_bg as string) ||
+    null;
+
+  const customDecorative =
+    (rawStyle.decorative_color as string) ||
+    (rawStyle.decorative as string) ||
+    (pageRaw.decorative_color as string) ||
     null;
 
   const customFont =
     (rawStyle.font_family as string) ||
     (rawStyle.fontFamily as string) ||
+    (rawStyle.font as string) ||
     (pageRaw.font_family as string) ||
+    (pageRaw.font as string) ||
     null;
 
   // 2. Resolve Dynamic MongoDB Page & Chapter Icons
@@ -159,7 +207,12 @@ export function VasukiBookPage({
 
   // Build Comprehensive Dynamic Inline Style Layer for full MongoDB fidelity
   const computedPageStyle: React.CSSProperties = {
-    ...(customBg
+    ...(customGradient
+      ? {
+          background: customGradient,
+          ["--theme-bg" as string]: customBg || "transparent",
+        }
+      : customBg
       ? {
           backgroundColor: customBg,
           ["--theme-bg" as string]: customBg,
@@ -172,6 +225,7 @@ export function VasukiBookPage({
           ["--theme-accent" as string]: customAccent,
           ["--color-brand-green" as string]: customAccent,
           ["--color-primary" as string]: customAccent,
+          ["--theme-accent-soft" as string]: customAccentSoft || `${customAccent}1f`,
         }
       : {}),
     ...(customTextColor
@@ -186,12 +240,24 @@ export function VasukiBookPage({
       ? {
           ["--theme-text-muted" as string]: customTextMuted,
           ["--theme-text-secondary" as string]: customTextMuted,
+          ["--theme-text-subtle" as string]: customTextMuted,
         }
       : {}),
     ...(customBorderColor
       ? {
           borderColor: customBorderColor,
           ["--theme-border" as string]: customBorderColor,
+          ["--theme-border-strong" as string]: customBorderStrong || customBorderColor,
+        }
+      : {}),
+    ...(customCardBg
+      ? {
+          ["--theme-card-bg" as string]: customCardBg,
+        }
+      : {}),
+    ...(customDecorative
+      ? {
+          ["--theme-decorative" as string]: customDecorative,
         }
       : {}),
     ...(customFont
