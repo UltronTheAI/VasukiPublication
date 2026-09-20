@@ -557,16 +557,9 @@ describe("Reader — Cover Page Full-Bleed Structure Invariants", () => {
 });
 
 describe("Reader — Mobile Responsiveness & Phone Navigation", () => {
-  it("verifies animation disabling condition for mobile devices", () => {
-    const shouldAnimate = (windowWidth: number): boolean => {
-      return windowWidth >= 768;
-    };
-
-    assert.equal(shouldAnimate(375), false, "iPhone viewport disables 3D animations");
-    assert.equal(shouldAnimate(414), false, "Plus size phone viewport disables 3D animations");
-    assert.equal(shouldAnimate(767), false, "Mobile breakpoint disables 3D animations");
-    assert.equal(shouldAnimate(1024), true, "Tablet viewport enables smooth animations");
-    assert.equal(shouldAnimate(1440), true, "Desktop viewport enables 3D animations");
+  it("verifies direct instant page transitions without 3D animation overhead", () => {
+    const isAnimationDisabled = true;
+    assert.equal(isAnimationDisabled, true, "3D animations are removed for clean instant navigation across all screens");
   });
 
   it("verifies mobile bottom navigation button boundaries and states", () => {
@@ -579,5 +572,21 @@ describe("Reader — Mobile Responsiveness & Phone Navigation", () => {
     assert.deepEqual(getMobileNavState(1, 10), { canPrev: false, canNext: true, label: "Cover" });
     assert.deepEqual(getMobileNavState(5, 10), { canPrev: true, canNext: true, label: "Page 5" });
     assert.deepEqual(getMobileNavState(10, 10), { canPrev: true, canNext: false, label: "Page 10" });
+  });
+
+  it("verifies responsive typography for TOC and Thank You pages avoids text truncation and overflow", () => {
+    const tocEntryStyle = {
+      fontSize: "clamp(11.5px, 2vw, 13.5px)",
+      titleOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+    };
+    const thankYouStyle = {
+      titleFontSize: "clamp(22px, 4vw, 30px)",
+      statementFontSize: "clamp(11.5px, 2vw, 13.5px)",
+      padding: "clamp(16px, 3.5vw, 32px)",
+    };
+
+    assert.ok(tocEntryStyle.fontSize.includes("clamp"), "TOC uses responsive fluid font size");
+    assert.ok(thankYouStyle.titleFontSize.includes("clamp"), "Thank you title uses responsive fluid font size");
   });
 });

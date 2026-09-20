@@ -54,7 +54,6 @@ export function ReaderContainer({
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isTocOpen, setIsTocOpen] = useState<boolean>(false);
-  const [flipDirection, setFlipDirection] = useState<"next" | "prev" | "open" | null>(null);
 
   const { isSaved, toggle } = useSavedBooks();
   const bookSlug = book.slug || book.id;
@@ -244,18 +243,6 @@ export function ReaderContainer({
     (targetPage: number) => {
       const clamped = Math.min(Math.max(1, targetPage), totalPages);
       if (clamped === currentPage) return;
-      const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-      const isOpeningSpread = currentPage === 1 && clamped > 1;
-      const dir = isOpeningSpread ? "open" : clamped > currentPage ? "next" : "prev";
-
-      if (!isMobile) {
-        setFlipDirection(dir);
-        // Reset animation state after smooth 3D animation duration
-        setTimeout(() => setFlipDirection(null), 360);
-      } else {
-        setFlipDirection(null);
-      }
-
       setCurrentPage(clamped);
     },
     [currentPage, totalPages]
@@ -617,24 +604,10 @@ export function ReaderContainer({
           <ChevronLeft className="w-5 h-5" />
         </button>
 
-        {/* Book Canvas 3D Viewport */}
-        <div className="book-3d-stage">
+        {/* Book Canvas Viewport */}
+        <div className="book-stage w-full h-full flex items-center justify-center relative">
           <div
-            className={`book-3d-spread ${
-              rightPageData
-                ? flipDirection === "open"
-                  ? "is-opening"
-                  : flipDirection === "next"
-                  ? "is-flip-next"
-                  : flipDirection === "prev"
-                  ? "is-flip-prev"
-                  : ""
-                : flipDirection === "next"
-                ? "is-single-flip-next"
-                : flipDirection === "prev"
-                ? "is-single-flip-prev"
-                : ""
-            }`}
+            className="book-spread flex items-center justify-center relative"
             style={{ transform: `scale(${zoomLevel / 100})` }}
           >
             {/* Left Page Slot */}
