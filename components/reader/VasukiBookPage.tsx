@@ -432,7 +432,7 @@ export function VasukiBookPage({
                 )}
 
                 {hasStructuredBlocks && (
-                  <div className="space-y-4">
+                  <div className="w-full flex flex-col gap-4 min-h-0 pb-4">
                     {page.content!.blocks!.map((block, idx) => (
                       <VasukiBlockRenderer key={idx} block={block} theme={effectiveTheme} />
                     ))}

@@ -255,51 +255,63 @@
 }
 
 .vasuki-book-root .page .page-content {
-  flex: 1 !important;
+  flex: 1 1 0% !important;
   width: 100% !important;
   max-width: 100% !important;
+  min-height: 0 !important;
+  height: 100% !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   box-sizing: border-box !important;
-  padding: 8px 18px 20px 4px !important;
+  padding: 8px 16px 28px 4px !important;
   scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Elegant, slim custom scrollbars scoped to Vasuki Book pages with breathing room */
+.vasuki-book-root .page .page-content > * {
+  flex-shrink: 0 !important;
+}
+
+/* Elegant, high-contrast custom scrollbars scoped to Vasuki Book pages */
 .vasuki-book-root * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+  scrollbar-color: rgba(100, 116, 139, 0.45) rgba(0, 0, 0, 0.04);
 }
 
 .vasuki-book-root *::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 .vasuki-book-root *::-webkit-scrollbar-track {
-  background: transparent;
-  margin: 8px 0;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 9999px;
+  margin: 6px 0;
 }
 
 .vasuki-book-root *::-webkit-scrollbar-thumb {
-  background-color: rgba(100, 116, 139, 0.35);
+  background-color: rgba(100, 116, 139, 0.5);
   border-radius: 9999px;
 }
 
 .vasuki-book-root *::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(100, 116, 139, 0.65);
+  background-color: rgba(100, 116, 139, 0.8);
 }
 
 .vasuki-book-root .page.theme-dark * {
-  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.45) rgba(255, 255, 255, 0.05);
+}
+
+.vasuki-book-root .page.theme-dark *::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .vasuki-book-root .page.theme-dark *::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.28);
+  background-color: rgba(255, 255, 255, 0.45);
 }
 
 .vasuki-book-root .page.theme-dark *::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.55);
+  background-color: #00ed64;
 }
 
 @media (max-width: 640px) {
@@ -420,7 +432,7 @@
 }
 
 .page-content {
-  flex: 1 1 auto;
+  flex: 1 1 0% !important;
   display: flex;
   flex-direction: column;
   overflow-y: auto !important;
@@ -429,9 +441,10 @@
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  min-height: 0;
+  min-height: 0 !important;
   box-sizing: border-box;
-  padding-right: 4px;
+  padding-right: 6px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .page-footer {
@@ -746,9 +759,11 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
   border: 1px solid var(--color-hairline-dark);
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(0, 30, 43, 0.25);
-  margin: var(--spacing-sm) 0;
+  margin: 16px 0 !important;
   max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
+  flex-shrink: 0 !important;
 }
 
 .terminal-header {
@@ -756,13 +771,14 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 10px 16px;
   background-color: #000c12;
   border-bottom: 1px solid var(--color-hairline-dark);
   font-family: var(--font-code);
   font-size: 11px;
-  min-height: 38px;
+  min-height: 40px;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .terminal-dots {
@@ -809,14 +825,15 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
 }
 
 .terminal-body {
-  padding: 16px 18px;
+  padding: 18px 20px !important;
   font-family: var(--font-code);
-  font-size: 12.5px;
-  line-height: 1.65;
-  max-height: 280px;
-  overflow-y: auto;
-  overflow-x: auto;
-  box-sizing: border-box;
+  font-size: 13px !important;
+  line-height: 1.7 !important;
+  min-height: 140px !important;
+  max-height: 520px !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  box-sizing: border-box !important;
 }
 
 .terminal-line {
