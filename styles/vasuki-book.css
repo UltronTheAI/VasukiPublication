@@ -978,6 +978,11 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
   font-weight: 600;
 }
 
+.t-header-key {
+  color: #c084fc !important; /* Soft Violet Header Key */
+  font-weight: 600;
+}
+
 .t-error {
   color: #f87171 !important; /* Vivid Red Status */
   font-weight: 600;

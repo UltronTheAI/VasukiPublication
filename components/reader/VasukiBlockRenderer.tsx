@@ -357,6 +357,103 @@ function colorizeJsonString(str: string): React.ReactNode[] {
   return nodes;
 }
 
+function colorizeStringToken(quotedStr: string): React.ReactNode[] {
+  if (quotedStr.length <= 2) {
+    return [<span key="str-empty" className="t-str">{quotedStr}</span>];
+  }
+
+  const quoteChar = quotedStr[0];
+  const endQuote = quotedStr[quotedStr.length - 1];
+  const inner = quotedStr.slice(1, -1);
+
+  // Check if inner content is a JSON object or array
+  if ((inner.startsWith("{") && inner.endsWith("}")) || (inner.startsWith("[") && inner.endsWith("]"))) {
+    return [
+      <span key="q-open" className="t-str">{quoteChar}</span>,
+      ...colorizeJsonString(inner),
+      <span key="q-close" className="t-str">{endQuote}</span>,
+    ];
+  }
+
+  // Check if inner content is an HTTP header format: e.g. "Content-Type: application/json" or "Authorization: Bearer $VAR"
+  const headerMatch = inner.match(/^([A-Za-z0-9-_]+):\s*(.*)$/);
+  if (headerMatch) {
+    const [, headerName, headerVal] = headerMatch;
+    const valNodes: React.ReactNode[] = [];
+
+    // Parse header value for Bearer/Basic/Token and $ENV_VARS
+    const valRegex = /(\b(?:Bearer|Basic|Token)\b)|(\$[A-Za-z0-9_]+|\$\{[A-Za-z0-9_]+\})|([^\s$]+|\s+)/g;
+    let vMatch: RegExpExecArray | null;
+    let vIdx = 0;
+
+    while ((vMatch = valRegex.exec(headerVal)) !== null) {
+      const [vFull, authType, envVar] = vMatch;
+      if (authType) {
+        valNodes.push(
+          <span key={`hdr-auth-${vIdx++}`} className="t-subcmd">
+            {authType}
+          </span>
+        );
+      } else if (envVar) {
+        valNodes.push(
+          <span key={`hdr-var-${vIdx++}`} className="t-var">
+            {envVar}
+          </span>
+        );
+      } else {
+        valNodes.push(
+          <span key={`hdr-val-${vIdx++}`} className="t-str">
+            {vFull}
+          </span>
+        );
+      }
+    }
+
+    return [
+      <span key="q-open" className="t-str">{quoteChar}</span>,
+      <span key="hdr-name" className="t-header-key">{headerName}</span>,
+      <span key="hdr-colon" className="t-punct">: </span>,
+      ...valNodes,
+      <span key="q-close" className="t-str">{endQuote}</span>,
+    ];
+  }
+
+  // Check if inner string contains embedded $ENV_VARs
+  if (inner.includes("$")) {
+    const varRegex = /(\$[A-Za-z0-9_]+|\$\{[A-Za-z0-9_]+\})/g;
+    const parts = inner.split(varRegex);
+    const nodes: React.ReactNode[] = [
+      <span key="q-open" className="t-str">{quoteChar}</span>,
+    ];
+
+    parts.forEach((part, idx) => {
+      if (!part) return;
+      if (part.startsWith("$")) {
+        nodes.push(
+          <span key={`str-var-${idx}`} className="t-var">
+            {part}
+          </span>
+        );
+      } else {
+        nodes.push(
+          <span key={`str-txt-${idx}`} className="t-str">
+            {part}
+          </span>
+        );
+      }
+    });
+
+    nodes.push(
+      <span key="q-close" className="t-str">{endQuote}</span>
+    );
+    return nodes;
+  }
+
+  return [
+    <span key="str-plain" className="t-str">{quotedStr}</span>,
+  ];
+}
+
 function colorizeTerminalLine(text: string, kind: string): React.ReactNode {
   if (!text) return "\u00A0";
 
@@ -387,8 +484,22 @@ function colorizeTerminalLine(text: string, kind: string): React.ReactNode {
     );
   }
 
-  // Tokenize CLI commands, arguments, variables, flags, endpoints, numbers, and JSON
-  const tokenRegex = /(https?:\/\/[^\s"'\\]+)|("([^"\\]|\\.)*"|'([^'\\]|\\.)*')|(?:\$[A-Z0-9_{}]+|\$\([^\)]+\))|(--?[a-zA-Z0-9_-]+(?:=[^\s"']*)?)|(\b(?:GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b)|(\b(?:curl|git|npm|npx|pnpm|yarn|pip|python|python3|node|docker|kubectl|aws|az|gcloud|brew|cargo|go|rustc|deno|bun|sudo|cat|grep|cd|ls|mkdir|rm|touch|chmod|chown|echo|export|set|source|sh|bash|zsh)\b)|(\b\d+(?:\.\d+)?\b)|(\\\s*$)/g;
+  const trimmed = text.trim();
+
+  // If the line is an isolated JSON key-value, array or object definition (e.g. inside curl -d body)
+  const isPureJsonLine =
+    !trimmed.startsWith("curl") &&
+    !trimmed.startsWith("npm") &&
+    !trimmed.startsWith("git") &&
+    !trimmed.startsWith("-") &&
+    (/^\s*"[^"]+"\s*:/.test(text) || trimmed === "{" || trimmed === "}" || trimmed === "}," || trimmed === "]" || trimmed === "],");
+
+  if (isPureJsonLine) {
+    return colorizeJsonString(text);
+  }
+
+  // Tokenize CLI commands, arguments, variables, flags, endpoints, subcommands, numbers, and slashes
+  const tokenRegex = /(https?:\/\/[^\s"'\\]+)|("([^"\\]|\\.)*"|'([^'\\]|\\.)*')|(?:\$[A-Za-z0-9_]+|\$\{[A-Za-z0-9_]+\}|\$\([^\)]+\))|(--?[a-zA-Z0-9_-]+(?:=[^\s"']*)?)|(\b(?:GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b)|(\b(?:curl|git|npm|npx|pnpm|yarn|pip|python|python3|node|docker|kubectl|aws|az|gcloud|brew|cargo|go|rustc|deno|bun|sudo|cat|grep|cd|ls|mkdir|rm|touch|chmod|chown|echo|export|set|source|sh|bash|zsh)\b)|(\b(?:run|install|build|dev|start|test|commit|push|pull|checkout|branch|merge|status|clone|init|deploy|exec|logs)\b)|(\b\d+(?:\.\d+)?\b)|(\\\s*$)/g;
 
   const nodes: React.ReactNode[] = [];
   let lastIndex = 0;
@@ -409,6 +520,7 @@ function colorizeTerminalLine(text: string, kind: string): React.ReactNode {
       flag,
       httpMethod,
       cliCmd,
+      cliSubcmd,
       num,
       trailingSlash,
     ] = match;
@@ -420,28 +532,7 @@ function colorizeTerminalLine(text: string, kind: string): React.ReactNode {
         </span>
       );
     } else if (quotedStr) {
-      if (
-        (quotedStr.startsWith("'{") && quotedStr.endsWith("}'")) ||
-        (quotedStr.startsWith('"{') && quotedStr.endsWith('}"'))
-      ) {
-        const quoteChar = quotedStr[0];
-        const inner = quotedStr.slice(1, -1);
-        nodes.push(
-          <span key={`${nodes.length}-q1`} className="t-str">
-            {quoteChar}
-          </span>,
-          ...colorizeJsonString(inner),
-          <span key={`${nodes.length}-q2`} className="t-str">
-            {quoteChar}
-          </span>
-        );
-      } else {
-        nodes.push(
-          <span key={nodes.length} className="t-str">
-            {quotedStr}
-          </span>
-        );
-      }
+      nodes.push(...colorizeStringToken(quotedStr));
     } else if (envVar) {
       nodes.push(
         <span key={nodes.length} className="t-var">
@@ -464,6 +555,12 @@ function colorizeTerminalLine(text: string, kind: string): React.ReactNode {
       nodes.push(
         <span key={nodes.length} className="t-cmd">
           {cliCmd}
+        </span>
+      );
+    } else if (cliSubcmd) {
+      nodes.push(
+        <span key={nodes.length} className="t-subcmd">
+          {cliSubcmd}
         </span>
       );
     } else if (num) {
