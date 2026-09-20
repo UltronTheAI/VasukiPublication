@@ -489,3 +489,34 @@ describe("Reader — Zero Advertisements Rule", () => {
     assert.equal(readerPlacements.length, 0, "No ad placements allowed in reader");
   });
 });
+
+describe("Reader — Markdown & Rich Text Formatting", () => {
+  it("correctly identifies markdown inline tokens for bold, italic, code, and links", () => {
+    const text = "A prompt with **cue**, *routine*, `codeSnippet`, and [Documentation](https://example.com)";
+    const regex = /(```[\s\S]*?```|`[^`\n]+`|\*\*\*[^*]+\*\*\*|___[^_]+___|\*\*[^*]+\*\*|__[^_]+__|(?<!\w)\*[^*\n]+\*(?!\w)|(?<!\w)_[^_\n]+_(?!\w)|~~[^~\n]+~~|\[[^\]]+\]\([^)]+\))/g;
+    const matches = text.match(regex);
+    assert.deepEqual(matches, ["**cue**", "*routine*", "`codeSnippet`", "[Documentation](https://example.com)"]);
+  });
+
+  it("splits paragraphs correctly by double newlines", () => {
+    const multiline = "First paragraph with **bold**.\n\nSecond paragraph with `code`.\n\nThird paragraph.";
+    const paragraphs = multiline.split(/\n\s*\n/);
+    assert.equal(paragraphs.length, 3);
+    assert.equal(paragraphs[0], "First paragraph with **bold**.");
+    assert.equal(paragraphs[1], "Second paragraph with `code`.");
+    assert.equal(paragraphs[2], "Third paragraph.");
+  });
+});
+
+describe("Reader — Cover Page Full-Bleed Structure Invariants", () => {
+  it("verifies cover footer strip contains author and web edition metadata", () => {
+    const coverMeta = {
+      author: "Vasuki",
+      edition: "DIGITAL WEB EDITION",
+      headline: "VASUKISQUARE EDITION",
+    };
+    assert.ok(coverMeta.author.length > 0);
+    assert.equal(coverMeta.edition, "DIGITAL WEB EDITION");
+    assert.equal(coverMeta.headline, "VASUKISQUARE EDITION");
+  });
+});

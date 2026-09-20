@@ -4,6 +4,7 @@ import React from "react";
 import { VasukiBlockRenderer } from "@/components/reader/VasukiBlockRenderer";
 import { VasukiHtmlRenderer } from "@/components/reader/VasukiHtmlRenderer";
 import { VasukiIcon } from "@/components/vasuki/VasukiIcon";
+import { renderMarkdownInline, renderMarkdownParagraphs } from "@/lib/vasuki/markdown";
 import type { Page, Book } from "@/lib/types/publication";
 
 interface VasukiBookPageProps {
@@ -714,12 +715,12 @@ export function VasukiBookPage({
                   {page.chapter_number ? `Chapter ${page.chapter_number}` : "Chapter"}
                 </div>
                 <h1 className="chapter-title">
-                  {page.chapter_title || page.content?.headline || "Chapter Introduction"}
+                  {renderMarkdownInline(page.chapter_title || page.content?.headline || "Chapter Introduction")}
                 </h1>
                 {page.content?.body && (
-                  <p className="typo-lead" style={{ marginTop: "16px", maxWidth: "520px" }}>
-                    {page.content.body}
-                  </p>
+                  <div className="typo-lead" style={{ marginTop: "16px", maxWidth: "520px" }}>
+                    {renderMarkdownParagraphs(page.content.body)}
+                  </div>
                 )}
                 {hasStructuredBlocks && (
                   <div className="w-full text-left" style={{ marginTop: "24px" }}>
@@ -745,9 +746,13 @@ export function VasukiBookPage({
                 <div className="title-page-body">
                   <h1 className="title-page-title">{book.title}</h1>
                   <div className="title-page-divider" />
-                  <p className="title-page-subtitle">
-                    {book.subtitle || (page.content && page.content.body) || "A Definitive Architecture & Implementation Guide"}
-                  </p>
+                  <div className="title-page-subtitle">
+                    {book.subtitle
+                      ? renderMarkdownInline(book.subtitle)
+                      : page.content?.body
+                      ? renderMarkdownParagraphs(page.content.body)
+                      : "A Definitive Architecture & Implementation Guide"}
+                  </div>
                 </div>
                 <div className="title-page-imprint">
                   <p><strong>VasukiSquare Technical Publishing Engine</strong></p>
@@ -772,12 +777,13 @@ export function VasukiBookPage({
                   </div>
                   <div className="thank-you-divider" />
                   <h1 className="thank-you-title">
-                    {page.content?.headline || "THANK YOU"}
+                    {renderMarkdownInline(page.content?.headline || "THANK YOU")}
                   </h1>
-                  <p className="thank-you-statement">
-                    {page.content?.body ||
-                      "Thank you for reading. Researched from primary authoritative sources and rendered deterministically to physical A4 print specifications by VasukiSquare."}
-                  </p>
+                  <div className="thank-you-statement">
+                    {page.content?.body
+                      ? renderMarkdownParagraphs(page.content.body)
+                      : "Thank you for reading. Researched from primary authoritative sources and rendered deterministically to physical A4 print specifications by VasukiSquare."}
+                  </div>
                 </div>
                 <div className="thank-you-footer">
                   <span>{book.running_title || book.title}</span>
@@ -791,7 +797,7 @@ export function VasukiBookPage({
               <>
                 {!isHeadlineRedundant && page.content?.headline && (
                   <h2 className="content-headline">
-                    {page.content.headline}
+                    {renderMarkdownInline(page.content.headline)}
                   </h2>
                 )}
 
@@ -809,9 +815,7 @@ export function VasukiBookPage({
 
                 {!hasStructuredBlocks && !hasPreRenderedHtml && page.content?.body && (
                   <div className="content-body">
-                    {page.content.body.split("\n\n").map((para, i) => (
-                      <p key={i}>{para}</p>
-                    ))}
+                    {renderMarkdownParagraphs(page.content.body)}
                   </div>
                 )}
               </>

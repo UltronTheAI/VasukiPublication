@@ -417,6 +417,27 @@
   justify-content: space-between !important;
 }
 
+.vasuki-book-root .page.layout-cover .page-safe-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.vasuki-book-root .page.layout-cover .page-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  scrollbar-gutter: auto !important;
+  flex: 1 1 100% !important;
+}
+
 .vasuki-book-root .page-safe-content {
   width: 100% !important;
   height: 100% !important;

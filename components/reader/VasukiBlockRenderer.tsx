@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { VasukiIcon } from "@/components/vasuki/VasukiIcon";
 import { Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { renderMarkdownInline, renderMarkdownParagraphs } from "@/lib/vasuki/markdown";
 import type {
   ContentBlock,
   HeadingBlock,
@@ -39,24 +40,24 @@ interface BlockRendererProps {
 // -----------------------------------------------------------------------------
 function renderRichSpans(spans?: RichSpan[], defaultText?: string) {
   if (!spans || spans.length === 0) {
-    return defaultText || null;
+    return renderMarkdownParagraphs(defaultText) || null;
   }
 
   return spans.map((span, idx) => {
-    let content: React.ReactNode = span.text;
+    let content: React.ReactNode = renderMarkdownInline(span.text);
 
     if (span.code) {
       content = (
-        <code key={idx} className="rich-code">
-          {content}
+        <code key={idx} className="rich-code font-mono text-[0.88em] bg-[var(--theme-border)] text-[var(--theme-accent,#00ed64)] px-1.5 py-0.5 rounded border border-[var(--theme-border-strong)]">
+          {span.text}
         </code>
       );
     }
     if (span.bold) {
-      content = <strong key={idx}>{content}</strong>;
+      content = <strong key={idx} className="font-bold text-[var(--theme-text)]">{content}</strong>;
     }
     if (span.italic) {
-      content = <em key={idx}>{content}</em>;
+      content = <em key={idx} className="italic">{content}</em>;
     }
     if (span.link) {
       content = (
@@ -65,7 +66,7 @@ function renderRichSpans(spans?: RichSpan[], defaultText?: string) {
           href={span.link}
           target="_blank"
           rel="noopener noreferrer nofollow"
-          className="rich-link"
+          className="rich-link text-[var(--theme-accent,#00ed64)] underline hover:opacity-85 font-medium"
         >
           {content}
         </a>
@@ -84,7 +85,7 @@ function RenderHeading({ block }: { block: HeadingBlock }) {
 
   return (
     <div className="heading-block my-4 first:mt-0">
-      {eyebrow && <div className="typo-eyebrow mb-1">{eyebrow}</div>}
+      {eyebrow && <div className="typo-eyebrow mb-1">{renderMarkdownInline(eyebrow)}</div>}
       <div className="flex items-center gap-2.5">
         {icon && (
           <div className="shrink-0 p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
@@ -92,13 +93,13 @@ function RenderHeading({ block }: { block: HeadingBlock }) {
           </div>
         )}
         {level === 1 ? (
-          <h1>{text}</h1>
+          <h1>{renderMarkdownInline(text)}</h1>
         ) : level === 2 ? (
-          <h2>{text}</h2>
+          <h2>{renderMarkdownInline(text)}</h2>
         ) : level === 3 ? (
-          <h3>{text}</h3>
+          <h3>{renderMarkdownInline(text)}</h3>
         ) : (
-          <h4>{text}</h4>
+          <h4>{renderMarkdownInline(text)}</h4>
         )}
       </div>
     </div>
@@ -113,16 +114,16 @@ function RenderText({ block }: { block: TextBlock }) {
     return (
       <div className="content-body space-y-3 my-3">
         {block.paragraphs.map((p, i) => (
-          <p key={i}>{p}</p>
+          <p key={i} className="leading-relaxed">{renderMarkdownInline(p)}</p>
         ))}
       </div>
     );
   }
 
   return (
-    <p className="content-body my-3">
+    <div className="content-body my-3 leading-relaxed">
       {renderRichSpans(block.spans, block.text)}
-    </p>
+    </div>
   );
 }
 
@@ -686,11 +687,11 @@ function RenderCallout({ block, theme = "light" }: { block: CalloutBlock; theme?
           className="callout-icon"
         />
         <span className="callout-title">
-          {block.title || config.title}
+          {renderMarkdownInline(block.title || config.title)}
         </span>
       </div>
-      <div className="callout-content">
-        {block.content}
+      <div className="callout-content leading-relaxed">
+        {renderMarkdownParagraphs(block.content)}
       </div>
     </div>
   );
@@ -706,7 +707,7 @@ function RenderTable({ block }: { block: TableBlock }) {
     <div className="component-table-container my-4">
       {block.caption && (
         <div className="table-caption">
-          {block.caption}
+          {renderMarkdownInline(block.caption)}
         </div>
       )}
       <table className="component-table">
@@ -728,7 +729,7 @@ function RenderTable({ block }: { block: TableBlock }) {
                     {block.header_icons?.[idx] && (
                       <VasukiIcon name={block.header_icons[idx]} size={13} />
                     )}
-                    <span>{hdr}</span>
+                    <span>{renderMarkdownInline(hdr)}</span>
                   </div>
                 </th>
               ))}
@@ -753,7 +754,7 @@ function RenderTable({ block }: { block: TableBlock }) {
                       : ""
                   }`}
                 >
-                  {cell}
+                  {renderMarkdownInline(cell)}
                 </td>
               ))}
             </tr>
@@ -762,7 +763,7 @@ function RenderTable({ block }: { block: TableBlock }) {
       </table>
       {block.source_note && (
         <div className="typo-caption italic mt-1.5">
-          Source: {block.source_note}
+          Source: {renderMarkdownInline(block.source_note)}
         </div>
       )}
     </div>
@@ -777,7 +778,7 @@ function RenderComparison({ block, theme = "light" }: { block: ComparisonBlock; 
     <div className={`component-comparison theme-${theme} my-4`}>
       {block.title && (
         <h4 className="typo-heading-5 mb-2">
-          {block.title}
+          {renderMarkdownInline(block.title)}
         </h4>
       )}
       <div className="comparison-grid grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -785,13 +786,13 @@ function RenderComparison({ block, theme = "light" }: { block: ComparisonBlock; 
         <div className="comparison-column comparison-left p-3.5 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card-bg)]">
           <div className="comparison-col-header flex items-center gap-2 font-semibold text-xs text-emerald-600 dark:text-emerald-400 mb-2">
             <VasukiIcon name={block.left_icon || "CheckCircle"} size={15} />
-            <span>{block.left_title || "Do"}</span>
+            <span>{renderMarkdownInline(block.left_title || "Do")}</span>
           </div>
           <ul className="comparison-list space-y-1.5 text-xs leading-relaxed">
             {block.left_items?.map((item, idx) => (
               <li key={idx} className="flex items-start gap-1.5">
                 <span className="text-emerald-500 font-bold">•</span>
-                <span>{item}</span>
+                <span>{renderMarkdownInline(item)}</span>
               </li>
             ))}
           </ul>
@@ -801,13 +802,13 @@ function RenderComparison({ block, theme = "light" }: { block: ComparisonBlock; 
         <div className="comparison-column comparison-right p-3.5 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card-bg)]">
           <div className="comparison-col-header flex items-center gap-2 font-semibold text-xs text-orange-600 dark:text-orange-400 mb-2">
             <VasukiIcon name={block.right_icon || "XCircle"} size={15} />
-            <span>{block.right_title || "Don't"}</span>
+            <span>{renderMarkdownInline(block.right_title || "Don't")}</span>
           </div>
           <ul className="comparison-list space-y-1.5 text-xs leading-relaxed">
             {block.right_items?.map((item, idx) => (
               <li key={idx} className="flex items-start gap-1.5">
                 <span className="text-orange-500 font-bold">•</span>
-                <span>{item}</span>
+                <span>{renderMarkdownInline(item)}</span>
               </li>
             ))}
           </ul>
@@ -825,7 +826,7 @@ function RenderTimeline({ block, theme = "light" }: { block: TimelineBlock; them
     <div className={`component-timeline theme-${theme} my-4`}>
       {block.title && (
         <div className="timeline-title">
-          {block.title}
+          {renderMarkdownInline(block.title)}
         </div>
       )}
       <div className="timeline-track">
@@ -838,9 +839,9 @@ function RenderTimeline({ block, theme = "light" }: { block: TimelineBlock; them
                 <span className="timeline-tag">{badge}</span>
               </div>
               <div className="timeline-content">
-                <div className="timeline-heading">{stepItem.title}</div>
+                <div className="timeline-heading">{renderMarkdownInline(stepItem.title)}</div>
                 {stepItem.description && (
-                  <div className="timeline-desc">{stepItem.description}</div>
+                  <div className="timeline-desc leading-relaxed">{renderMarkdownParagraphs(stepItem.description)}</div>
                 )}
               </div>
             </div>
@@ -859,7 +860,7 @@ function RenderChecklist({ block, theme = "light" }: { block: ChecklistBlock; th
     <div className={`component-checklist theme-${theme} my-4`}>
       {block.title && (
         <div className="checklist-title">
-          {block.title}
+          {renderMarkdownInline(block.title)}
         </div>
       )}
       <ul className="checklist-items">
@@ -877,7 +878,9 @@ function RenderChecklist({ block, theme = "light" }: { block: ChecklistBlock; th
               >
                 {checked ? "✓" : ""}
               </div>
-              <span className={`checklist-text ${checked ? "line-through opacity-70" : ""}`}>{text}</span>
+              <span className={`checklist-text leading-relaxed ${checked ? "line-through opacity-70" : ""}`}>
+                {renderMarkdownInline(text)}
+              </span>
             </li>
           );
         })}
@@ -894,7 +897,7 @@ function RenderStep({ block, theme = "light" }: { block: StepBlock; theme?: stri
     <div className={`component-steps theme-${theme} my-4`}>
       {block.title && (
         <div className="step-block-title">
-          {block.title}
+          {renderMarkdownInline(block.title)}
         </div>
       )}
       <div className="step-list">
@@ -907,13 +910,13 @@ function RenderStep({ block, theme = "light" }: { block: StepBlock; theme?: stri
                 {num}
               </div>
               <div className="step-details">
-                <div className="font-semibold text-xs mb-1">
-                  {step.title}
+                <div className="font-semibold text-xs mb-1 text-[var(--theme-text)]">
+                  {renderMarkdownInline(step.title)}
                 </div>
                 {step.description && (
-                  <p className="text-xs text-[var(--theme-text-secondary)] leading-relaxed">
-                    {step.description}
-                  </p>
+                  <div className="text-xs text-[var(--theme-text-secondary)] leading-relaxed">
+                    {renderMarkdownParagraphs(step.description)}
+                  </div>
                 )}
                 {step.code && (
                   <pre className="mt-2 p-2 rounded-lg bg-[#00141d] text-emerald-300 text-[11px] font-mono overflow-x-auto">
@@ -946,10 +949,12 @@ function RenderDefinition({ block, theme = "light" }: { block: DefinitionBlock; 
           </span>
         )}
       </div>
-      <div className="def-body text-xs text-[var(--theme-text-secondary)] leading-relaxed">{block.definition}</div>
+      <div className="def-body text-xs text-[var(--theme-text-secondary)] leading-relaxed">
+        {renderMarkdownParagraphs(block.definition)}
+      </div>
       {block.example && (
         <div className="def-example mt-2 text-[11.5px] italic text-[var(--theme-text-muted)] border-t border-[var(--theme-border)] pt-1.5">
-          Example: “{block.example}”
+          Example: “{renderMarkdownInline(block.example)}”
         </div>
       )}
     </div>
@@ -967,7 +972,7 @@ function RenderExercise({ block, theme = "light" }: { block: ExerciseBlock; them
       <div className="exercise-header flex items-center justify-between mb-2">
         <div className="flex items-center gap-2 font-semibold text-xs text-indigo-950 dark:text-indigo-200">
           <VasukiIcon name="Cpu" size={16} className="text-indigo-500" />
-          <h3 className="exercise-title text-xs font-bold">{block.title || "Hands-On Exercise"}</h3>
+          <h3 className="exercise-title text-xs font-bold">{renderMarkdownInline(block.title || "Hands-On Exercise")}</h3>
         </div>
         {block.difficulty && (
           <span className="exercise-badge px-2 py-0.5 rounded-full text-[10px] uppercase font-mono font-bold bg-indigo-500/20 text-indigo-700 dark:text-indigo-300">
@@ -977,13 +982,13 @@ function RenderExercise({ block, theme = "light" }: { block: ExerciseBlock; them
       </div>
 
       <div className="exercise-objective text-xs font-medium text-[var(--theme-text)] mb-2.5">
-        <strong>Objective:</strong> {block.objective}
+        <strong>Objective:</strong> {renderMarkdownInline(block.objective)}
       </div>
 
       {block.instructions && block.instructions.length > 0 && (
         <ol className="exercise-instructions space-y-1 text-xs text-[var(--theme-text-secondary)] mb-3 list-decimal pl-4">
           {block.instructions.map((inst, idx) => (
-            <li key={idx}>{inst}</li>
+            <li key={idx}>{renderMarkdownInline(inst)}</li>
           ))}
         </ol>
       )}
@@ -1023,11 +1028,11 @@ function RenderExercise({ block, theme = "light" }: { block: ExerciseBlock; them
 function RenderQuote({ block }: { block: QuoteBlock }) {
   return (
     <div className="component-quote my-4 p-4 rounded-xl border-l-4 border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/10 italic text-[var(--theme-text)]">
-      <blockquote className="text-sm leading-relaxed mb-2">“{block.quote}”</blockquote>
+      <blockquote className="text-sm leading-relaxed mb-2">“{renderMarkdownInline(block.quote)}”</blockquote>
       {(block.author || block.attribution) && (
         <div className="quote-author text-xs font-semibold not-italic text-emerald-600 dark:text-emerald-400 text-right">
-          — {block.author || block.attribution}
-          {block.role && <span className="font-normal text-[var(--theme-text-muted)]"> ({block.role})</span>}
+          — {renderMarkdownInline(block.author || block.attribution)}
+          {block.role && <span className="font-normal text-[var(--theme-text-muted)]"> ({renderMarkdownInline(block.role)})</span>}
         </div>
       )}
     </div>
@@ -1049,12 +1054,12 @@ function RenderStatistic({ block }: { block: StatisticBlock }) {
         {block.stat || block.value || "—"}
       </div>
       <div className="stat-label text-xs font-semibold text-[var(--theme-text)] mt-1">
-        {block.label}
+        {renderMarkdownInline(block.label)}
       </div>
       {block.context && (
-        <p className="stat-context text-[11px] text-[var(--theme-text-muted)] mt-1 max-w-sm mx-auto">
-          {block.context}
-        </p>
+        <div className="stat-context text-[11px] text-[var(--theme-text-muted)] mt-1 max-w-sm mx-auto leading-relaxed">
+          {renderMarkdownParagraphs(block.context)}
+        </div>
       )}
     </div>
   );
