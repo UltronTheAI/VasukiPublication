@@ -582,15 +582,6 @@ export function VasukiBookPage({
                 className="cover-hero cover-hero-solid"
                 style={{
                   backgroundColor: customBg || "#f9fbfa",
-                  padding: "36px 30px 70px 30px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  height: "100%",
-                  width: "100%",
-                  boxSizing: "border-box",
-                  position: "relative",
-                  overflow: "hidden",
                 }}
               >
                 {/* Background geometric svg layer */}
@@ -648,39 +639,27 @@ export function VasukiBookPage({
 
                 {/* Top brand header */}
                 <div
+                  className="cover-top-header"
                   style={{
                     position: "relative",
                     zIndex: 2,
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
+                    width: "100%",
                   }}
                 >
-                  <div
-                    className="cover-category-badge"
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      letterSpacing: "1.5px",
-                      textTransform: "uppercase",
-                      color: "#ffffff",
-                      backgroundColor: "#001e2b",
-                      padding: "4px 10px",
-                      borderRadius: "3px",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
-                      boxShadow: "0 2px 6px rgba(0, 0, 0, 0.25)",
-                      display: "inline-block",
-                    }}
-                  >
+                  <div className="cover-category-badge">
                     {page.content?.headline || "VASUKISQUARE EDITION"}
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                    <VasukiIcon name={pageIcon || "BookOpen"} size={18} />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                    <VasukiIcon name={pageIcon || "BookOpen"} size={16} />
                   </div>
                 </div>
 
                 {/* Title Box */}
                 <div
+                  className="cover-title-wrapper"
                   style={{
                     position: "relative",
                     zIndex: 2,
@@ -688,40 +667,11 @@ export function VasukiBookPage({
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "flex-start",
+                    width: "100%",
                   }}
                 >
-                  <div
-                    className="cover-title-container"
-                    style={{
-                      backgroundColor: "#001e2b",
-                      padding: "24px 28px",
-                      borderRadius: "6px",
-                      border: "1px solid rgba(255, 255, 255, 0.15)",
-                      boxShadow: "0 10px 24px -6px rgba(0, 0, 0, 0.5)",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-start",
-                      textAlign: "left",
-                      gap: "12px",
-                      width: "fit-content",
-                      maxWidth: "100%",
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    <h1
-                      className="cover-title"
-                      style={{
-                        fontFamily: "var(--font-serif), Georgia, serif",
-                        fontSize: "28px",
-                        fontWeight: 700,
-                        lineHeight: 1.18,
-                        color: "#ffffff",
-                        letterSpacing: "-0.5px",
-                        maxWidth: "460px",
-                        wordBreak: "break-word",
-                        margin: 0,
-                      }}
-                    >
+                  <div className="cover-title-container">
+                    <h1 className="cover-title">
                       {book.title}
                     </h1>
                     <div
@@ -735,19 +685,7 @@ export function VasukiBookPage({
                       }}
                     />
                     {book.subtitle && (
-                      <p
-                        className="cover-subtitle"
-                        style={{
-                          fontFamily: "var(--font-display), sans-serif",
-                          fontSize: "12.5px",
-                          fontWeight: 400,
-                          lineHeight: 1.45,
-                          color: "#cbd5e1",
-                          maxWidth: "440px",
-                          margin: 0,
-                          wordBreak: "break-word",
-                        }}
-                      >
+                      <p className="cover-subtitle">
                         {book.subtitle}
                       </p>
                     )}
@@ -755,43 +693,11 @@ export function VasukiBookPage({
                 </div>
 
                 {/* Footer strip */}
-                <footer
-                  className="cover-footer-strip"
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    width: "100%",
-                    backgroundColor: "#001e2b",
-                    zIndex: 10,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "14px 28px",
-                    boxSizing: "border-box",
-                    borderTop: "1px solid rgba(255, 255, 255, 0.12)",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      fontWeight: 700,
-                      color: "#ffffff",
-                      letterSpacing: "0.5px",
-                    }}
-                  >
+                <footer className="cover-footer-strip">
+                  <span className="cover-footer-author">
                     {book.author || "Vasuki"}
                   </span>
-                  <span
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 500,
-                      color: "#cbd5e1",
-                      letterSpacing: "1.5px",
-                      textTransform: "uppercase",
-                    }}
-                  >
+                  <span className="cover-footer-edition">
                     DIGITAL WEB EDITION
                   </span>
                 </footer>

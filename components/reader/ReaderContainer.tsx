@@ -244,14 +244,19 @@ export function ReaderContainer({
     (targetPage: number) => {
       const clamped = Math.min(Math.max(1, targetPage), totalPages);
       if (clamped === currentPage) return;
+      const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
       const isOpeningSpread = currentPage === 1 && clamped > 1;
       const dir = isOpeningSpread ? "open" : clamped > currentPage ? "next" : "prev";
 
-      setFlipDirection(dir);
-      setCurrentPage(clamped);
+      if (!isMobile) {
+        setFlipDirection(dir);
+        // Reset animation state after smooth 3D animation duration
+        setTimeout(() => setFlipDirection(null), 360);
+      } else {
+        setFlipDirection(null);
+      }
 
-      // Reset animation state after smooth 3D animation duration
-      setTimeout(() => setFlipDirection(null), 360);
+      setCurrentPage(clamped);
     },
     [currentPage, totalPages]
   );
@@ -598,7 +603,7 @@ export function ReaderContainer({
       {/* =======================================================================
           2. MAIN CANVAS VIEWPORT (A4 Book Page Display)
          ======================================================================= */}
-      <main className="flex-1 relative flex items-center justify-center p-3 sm:p-5 md:p-6 overflow-hidden w-full h-full min-h-0">
+      <main className="flex-1 relative flex items-center justify-center p-2 sm:p-5 md:p-6 pb-20 sm:pb-5 overflow-hidden w-full h-full min-h-0">
         {/* Previous Page Floating Button (Visible on tablet/desktop) */}
         <button
           onClick={prevPage}
@@ -634,7 +639,7 @@ export function ReaderContainer({
           >
             {/* Left Page Slot */}
             <div
-              className={`h-full w-auto max-w-[calc(100vw-1.75rem)] sm:max-w-full max-h-[calc(100dvh-5.5rem)] aspect-[210/297] flex items-center justify-center min-w-0 min-h-0 shrink ${
+              className={`h-full w-auto max-w-[calc(100vw-1.25rem)] sm:max-w-full max-h-[calc(100dvh-7.5rem)] sm:max-h-[calc(100dvh-5.5rem)] aspect-[210/297] flex items-center justify-center min-w-0 min-h-0 shrink ${
                 rightPageData ? "book-page-slot-left" : "drop-shadow-md"
               }`}
             >
@@ -684,6 +689,47 @@ export function ReaderContainer({
         >
           <ChevronRight className="w-5 h-5" />
         </button>
+
+        {/* Mobile Fixed Bottom Navigation Bar (Visible on phones) */}
+        <div className="sm:hidden fixed bottom-3 inset-x-0 z-30 flex items-center justify-center px-4 pointer-events-none">
+          <div className="flex items-center justify-between gap-3 bg-slate-900/95 backdrop-blur-md text-white px-3 py-1.5 rounded-full shadow-2xl border border-white/20 pointer-events-auto min-w-[270px] max-w-xs">
+            {/* Left Button */}
+            <button
+              onClick={prevPage}
+              disabled={currentPage <= 1}
+              title="Previous Page"
+              aria-label="Previous Page"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all text-xs font-semibold cursor-pointer min-h-[38px]"
+              suppressHydrationWarning
+            >
+              <ChevronLeft className="w-4 h-4 text-emerald-400" />
+              <span>Prev</span>
+            </button>
+
+            {/* Current Page Indicator */}
+            <div className="flex flex-col items-center justify-center px-2 select-none">
+              <span className="font-mono text-xs font-bold text-slate-100 tracking-wide">
+                {currentPage} <span className="text-slate-400 font-normal">/</span> {totalPages}
+              </span>
+              <span className="text-[9.5px] text-slate-400 font-medium truncate max-w-[80px]">
+                {currentPage === 1 ? "Cover" : `Page ${currentPage}`}
+              </span>
+            </div>
+
+            {/* Right Button */}
+            <button
+              onClick={nextPage}
+              disabled={currentPage >= totalPages}
+              title="Next Page"
+              aria-label="Next Page"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-emerald-500 text-slate-950 hover:bg-emerald-400 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all text-xs font-bold shadow-sm cursor-pointer min-h-[38px]"
+              suppressHydrationWarning
+            >
+              <span>Next</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </main>
 
       {/* =======================================================================

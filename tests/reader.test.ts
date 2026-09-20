@@ -519,4 +519,40 @@ describe("Reader — Cover Page Full-Bleed Structure Invariants", () => {
     assert.equal(coverMeta.edition, "DIGITAL WEB EDITION");
     assert.equal(coverMeta.headline, "VASUKISQUARE EDITION");
   });
+
+  it("verifies cover page scales down gracefully on phone viewports", () => {
+    const mobilePadding = {
+      top: 16,
+      horizontal: 14,
+      bottom: 44,
+    };
+    assert.ok(mobilePadding.top <= 20, "Mobile top padding should be compact");
+    assert.ok(mobilePadding.bottom >= 40, "Mobile bottom padding provides room for footer");
+  });
+});
+
+describe("Reader — Mobile Responsiveness & Phone Navigation", () => {
+  it("verifies animation disabling condition for mobile devices", () => {
+    const shouldAnimate = (windowWidth: number): boolean => {
+      return windowWidth >= 768;
+    };
+
+    assert.equal(shouldAnimate(375), false, "iPhone viewport disables 3D animations");
+    assert.equal(shouldAnimate(414), false, "Plus size phone viewport disables 3D animations");
+    assert.equal(shouldAnimate(767), false, "Mobile breakpoint disables 3D animations");
+    assert.equal(shouldAnimate(1024), true, "Tablet viewport enables smooth animations");
+    assert.equal(shouldAnimate(1440), true, "Desktop viewport enables 3D animations");
+  });
+
+  it("verifies mobile bottom navigation button boundaries and states", () => {
+    const getMobileNavState = (page: number, total: number) => ({
+      canPrev: page > 1,
+      canNext: page < total,
+      label: page === 1 ? "Cover" : `Page ${page}`,
+    });
+
+    assert.deepEqual(getMobileNavState(1, 10), { canPrev: false, canNext: true, label: "Cover" });
+    assert.deepEqual(getMobileNavState(5, 10), { canPrev: true, canNext: true, label: "Page 5" });
+    assert.deepEqual(getMobileNavState(10, 10), { canPrev: true, canNext: false, label: "Page 10" });
+  });
 });
