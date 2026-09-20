@@ -132,6 +132,11 @@ function RenderText({ block }: { block: TextBlock }) {
 function RenderCode({ block, theme = "light" }: { block: CodeBlock; theme?: string }) {
   const [copied, setCopied] = useState(false);
 
+  // Hide empty code blocks
+  if (!block || !block.code || !block.code.trim()) {
+    return null;
+  }
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(block.code);
@@ -142,19 +147,19 @@ function RenderCode({ block, theme = "light" }: { block: CodeBlock; theme?: stri
     }
   };
 
-  const lines = (block.code || "").split("\n");
+  const lines = block.code.split("\n");
 
   return (
     <figure className="component-code-figure my-4">
       <div className={`component-code-block theme-${theme}`}>
         {/* Code Header Bar */}
         <div className="code-header">
-          <div className="flex items-center gap-2">
-            <span className="code-filename">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <span className="code-filename truncate" title={block.filename || block.language || "code"}>
               {block.filename || (block.language ? `${block.language.toLowerCase()}` : "code")}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {block.language && (
               <span className="code-lang-badge">
                 {block.language}
@@ -170,8 +175,8 @@ function RenderCode({ block, theme = "light" }: { block: CodeBlock; theme?: stri
           </div>
         </div>
 
-        {/* Code Body */}
-        <pre className="code-pre">
+        {/* Code Body with Custom Scrollbar & Comfortable Padding */}
+        <pre className="code-pre custom-scrollbar">
           <code className={`language-${block.language || "text"}`}>
             <table className="w-full border-collapse">
               <tbody>
@@ -201,55 +206,153 @@ function RenderCode({ block, theme = "light" }: { block: CodeBlock; theme?: stri
 }
 
 // -----------------------------------------------------------------------------
-// 4. Terminal Block
+// 4. Terminal Block Helper & Sanitization
 // -----------------------------------------------------------------------------
+interface CleanedTerminalLine {
+  text: string;
+  kind: "command" | "continuation" | "stdout" | "error" | "warning" | "success" | "comment";
+  prompt?: string;
+}
+
+function sanitizeTerminalLines(rawLines?: (string | TerminalLine)[]): CleanedTerminalLine[] {
+  if (!rawLines || rawLines.length === 0) return [];
+
+  const result: CleanedTerminalLine[] = [];
+  let isContinuation = false;
+
+  for (let i = 0; i < rawLines.length; i++) {
+    const item = rawLines[i];
+    let text = "";
+    let kind: CleanedTerminalLine["kind"] = "stdout";
+    let prompt = "$";
+
+    if (typeof item === "string") {
+      text = item;
+      if (text.startsWith("$ ")) {
+        kind = "command";
+        text = text.slice(2);
+      } else if (text.startsWith("> ")) {
+        kind = "continuation";
+        prompt = ">";
+        text = text.slice(2);
+      } else if (text.startsWith("# ")) {
+        kind = "comment";
+      } else {
+        kind = "stdout";
+      }
+    } else if (item && typeof item === "object") {
+      text = item.text || "";
+      kind = (item.kind as CleanedTerminalLine["kind"]) || "stdout";
+      prompt = item.prompt || "$";
+    }
+
+    const trimmed = text.trim();
+
+    // 1. Filter out lone dangling backslashes on their own line
+    if (trimmed === "\\" || trimmed === "\\\\") {
+      if (result.length > 0) {
+        const last = result[result.length - 1];
+        if (!last.text.trimEnd().endsWith("\\")) {
+          last.text = `${last.text.trimEnd()} \\`;
+        }
+      }
+      continue;
+    }
+
+    // 2. Skip completely blank lines if at start or end
+    if (!trimmed && (result.length === 0 || i === rawLines.length - 1)) {
+      continue;
+    }
+
+    // 3. Detect JSON payload or sub-argument continuation lines to avoid rogue $ prompts
+    if (isContinuation) {
+      if (
+        kind === "command" &&
+        (trimmed.startsWith("-") ||
+          trimmed.startsWith("{") ||
+          trimmed.startsWith("}") ||
+          trimmed.startsWith('"') ||
+          trimmed.startsWith("'") ||
+          trimmed.startsWith("]") ||
+          trimmed.startsWith("/") ||
+          trimmed === "}'" ||
+          trimmed === "}\"")
+      ) {
+        kind = "continuation";
+      }
+    }
+
+    if (kind === "command") {
+      if (trimmed.endsWith("\\") || trimmed.includes("-d '{") || trimmed.includes("-d \"{")) {
+        isContinuation = true;
+      } else {
+        isContinuation = false;
+      }
+    } else if (kind === "continuation") {
+      if (trimmed.endsWith("'") || trimmed.endsWith("\"") || trimmed === "}'" || trimmed === "}\"") {
+        isContinuation = false;
+      }
+    }
+
+    result.push({ text, kind, prompt });
+  }
+
+  return result;
+}
+
 function RenderTerminal({ block, theme = "light" }: { block: TerminalBlock; theme?: string }) {
+  const cleanedLines = sanitizeTerminalLines(block?.lines);
+
+  // Hide terminal if completely empty
+  if (cleanedLines.length === 0) {
+    return null;
+  }
+
+  const title = block.title ? block.title.trim() : "terminal";
+  const shell = block.shell ? block.shell.trim().toUpperCase() : "BASH";
+
   return (
     <div className={`component-terminal-window theme-${theme} my-4`}>
-      {/* Terminal Titlebar with macOS style dots */}
+      {/* Terminal Titlebar with macOS style dots and guaranteed single-line ellipsis */}
       <div className="terminal-header">
         <div className="terminal-dots">
           <span className="dot dot-red" />
           <span className="dot dot-yellow" />
           <span className="dot dot-green" />
         </div>
-        <span className="terminal-title">
-          {block.title || "terminal"}
+        <span className="terminal-title" title={title}>
+          {title}
         </span>
         <span className="terminal-shell">
-          {block.shell || "bash"}
+          {shell}
         </span>
       </div>
 
-      {/* Terminal Lines */}
-      <div className="terminal-body">
-        {block.lines?.map((line, idx) => {
-          if (typeof line === "string") {
-            const isCommand = line.startsWith("$ ") || line.startsWith("> ");
-            return (
-              <div key={idx} className={`terminal-line ${isCommand ? "is-command" : "is-stdout"}`}>
-                {isCommand ? (
-                  <>
-                    <span className="terminal-prompt">$</span>
-                    <span className="terminal-cmd">{line.slice(2)}</span>
-                  </>
-                ) : (
-                  <span>{line}</span>
-                )}
-              </div>
-            );
-          }
-
-          const lineObj = line as TerminalLine;
-          const prompt = lineObj.prompt || "$";
-          const kind = lineObj.kind || "stdout";
+      {/* Terminal Body with comfortable padding & scroll protection */}
+      <div className="terminal-body custom-scrollbar">
+        {cleanedLines.map((line, idx) => {
+          const isCommand = line.kind === "command";
+          const isContinuation = line.kind === "continuation";
+          const isComment = line.kind === "comment";
 
           return (
-            <div key={idx} className={`terminal-line is-${kind}`}>
-              {kind === "command" && (
-                <span className="terminal-prompt">{prompt}</span>
+            <div
+              key={idx}
+              className={`terminal-line is-${line.kind} ${isContinuation ? "is-continuation" : ""}`}
+            >
+              {isCommand && (
+                <span className="terminal-prompt">{line.prompt || "$"}</span>
               )}
-              <span className={kind === "command" ? "terminal-cmd" : ""}>{lineObj.text}</span>
+              {isContinuation && (
+                <span className="terminal-prompt text-emerald-500/50 select-none">&gt;</span>
+              )}
+              <span
+                className={`terminal-content ${
+                  isCommand ? "terminal-cmd" : isComment ? "terminal-comment" : "terminal-stdout"
+                }`}
+              >
+                {line.text}
+              </span>
             </div>
           );
         })}

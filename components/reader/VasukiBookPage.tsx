@@ -94,12 +94,22 @@ export function VasukiBookPage({
              ========================================================================= */}
           {!hideHeaderFooter && (
             <header className="page-header">
-              <span className="header-chapter">
+              <span
+                className="header-chapter truncate"
+                title={
+                  page.chapter_number
+                    ? `Chapter ${page.chapter_number}: ${page.chapter_title || ""}`
+                    : page.chapter_title || ""
+                }
+              >
                 {page.chapter_number
                   ? `Chapter ${page.chapter_number}: ${page.chapter_title || ""}`
                   : page.chapter_title || ""}
               </span>
-              <span className="header-topic">
+              <span
+                className="header-topic truncate"
+                title={book.running_title || book.title}
+              >
                 {book.running_title || book.title}
               </span>
             </header>
