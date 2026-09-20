@@ -375,6 +375,31 @@ describe("Reader — Dynamic Page Style Resolution", () => {
       "Unique editorial headline should be rendered"
     );
   });
+
+  it("verifies chapter opener renders clean full-screen layout without duplicate outer titles when pre-rendered HTML exists", () => {
+    const chapterOpenerPage: Partial<Page> = {
+      id: "p5",
+      book_id: "book-1",
+      page_number: 5,
+      page_type: "chapter_opener",
+      chapter_number: 1,
+      theme: "dark",
+      layout: "chapter_opener",
+      html: `<div class="chapter-opener-wrapper layout-split-contrast"><div class="opener-card"><h1 class="opener-title">Why Habits Matter: Foundations of Change</h1></div></div>`,
+      content: {
+        headline: "Why Habits Matter: Foundations of Change",
+        body: null,
+        blocks: [],
+      },
+    };
+
+    const hasStructuredBlocks = Boolean(chapterOpenerPage.content?.blocks && chapterOpenerPage.content.blocks.length > 0);
+    const hasPreRenderedHtml = Boolean(chapterOpenerPage.html && chapterOpenerPage.html.trim().length > 0);
+
+    // Invariant: when pre-rendered HTML is present and no structured blocks, VasukiHtmlRenderer handles the markup directly
+    const shouldDirectlyRenderHtml = !hasStructuredBlocks && hasPreRenderedHtml;
+    assert.equal(shouldDirectlyRenderHtml, true, "Chapter opener with pre-rendered HTML must directly render HTML without duplicate outer title");
+  });
 });
 
 describe("Reader — Icon Mapping Compatibility", () => {

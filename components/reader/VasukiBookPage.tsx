@@ -709,34 +709,35 @@ export function VasukiBookPage({
 
             {/* B. Chapter Opener Layout */}
             {!isCover && isChapterOpener && (
-              <div className="chapter-opener-block">
-                <div className="chapter-icon">
-                  <VasukiIcon name={pageIcon || "Sparkles"} size={56} />
-                </div>
-                <div className="chapter-num">
-                  {page.chapter_number ? `Chapter ${page.chapter_number}` : "Chapter"}
-                </div>
-                <h1 className="chapter-title">
-                  {renderMarkdownInline(page.chapter_title || page.content?.headline || "Chapter Introduction")}
-                </h1>
-                {page.content?.body && (
-                  <div className="typo-lead" style={{ marginTop: "16px", maxWidth: "520px" }}>
-                    {renderMarkdownParagraphs(page.content.body)}
+              <>
+                {!hasStructuredBlocks && hasPreRenderedHtml ? (
+                  <VasukiHtmlRenderer html={page.html!} className="w-full h-full flex flex-col justify-center items-center" />
+                ) : (
+                  <div className="chapter-opener-block">
+                    <div className="chapter-icon">
+                      <VasukiIcon name={pageIcon || "Sparkles"} size={56} />
+                    </div>
+                    <div className="chapter-num">
+                      {page.chapter_number ? `Chapter ${page.chapter_number}` : "Chapter"}
+                    </div>
+                    <h1 className="chapter-title">
+                      {renderMarkdownInline(page.chapter_title || page.content?.headline || "Chapter Introduction")}
+                    </h1>
+                    {page.content?.body && (
+                      <div className="typo-lead" style={{ marginTop: "16px", maxWidth: "520px" }}>
+                        {renderMarkdownParagraphs(page.content.body)}
+                      </div>
+                    )}
+                    {hasStructuredBlocks && (
+                      <div className="w-full text-left" style={{ marginTop: "24px" }}>
+                        {page.content!.blocks!.map((block, idx) => (
+                          <VasukiBlockRenderer key={idx} block={block} theme={effectiveTheme} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
-                {hasStructuredBlocks && (
-                  <div className="w-full text-left" style={{ marginTop: "24px" }}>
-                    {page.content!.blocks!.map((block, idx) => (
-                      <VasukiBlockRenderer key={idx} block={block} theme={effectiveTheme} />
-                    ))}
-                  </div>
-                )}
-                {!hasStructuredBlocks && hasPreRenderedHtml && (
-                  <div className="w-full text-left" style={{ marginTop: "20px" }}>
-                    <VasukiHtmlRenderer html={page.html!} />
-                  </div>
-                )}
-              </div>
+              </>
             )}
 
             {/* C. Title / Imprint Layout */}

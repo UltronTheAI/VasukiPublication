@@ -903,9 +903,16 @@ pre, code, table, .component-code-block, .component-terminal-window, .component-
 }
 
 /* ==========================================================================
-   Chapter Opener: Fully Centered, Minimal, High Hierarchy
+   Chapter Opener: Full Screen of Page, Centered, High Hierarchy, Zero Overflow
    ========================================================================== */
-.layout-chapter_opener .page-safe-content {
+.vasuki-book-root .page.layout-chapter_opener,
+.page.layout-chapter_opener {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.vasuki-book-root .page.layout-chapter_opener .page-safe-content,
+.page.layout-chapter_opener .page-safe-content {
   display: flex !important;
   flex-direction: column !important;
   justify-content: center !important;
@@ -913,30 +920,66 @@ pre, code, table, .component-code-block, .component-terminal-window, .component-
   text-align: center !important;
   height: 100% !important;
   width: 100% !important;
+  padding: clamp(20px, 4vw, 44px) !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
-.layout-chapter_opener .page-content {
+.vasuki-book-root .page.layout-chapter_opener .page-content,
+.page.layout-chapter_opener .page-content {
   display: flex !important;
   flex-direction: column !important;
   justify-content: center !important;
   align-items: center !important;
   text-align: center !important;
-  flex: 1;
-  width: 100%;
+  flex: 1 1 100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  scrollbar-gutter: auto !important;
 }
 
-.layout-chapter_opener .chapter-opener-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  max-width: 540px;
-  margin: auto;
+.vasuki-book-root .page.layout-chapter_opener .vasuki-html-container,
+.page.layout-chapter_opener .vasuki-html-container {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  overflow: hidden !important;
+}
+
+.vasuki-book-root .page.layout-chapter_opener .chapter-opener-wrapper,
+.page.layout-chapter_opener .chapter-opener-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.vasuki-book-root .page.layout-chapter_opener .chapter-opener-block,
+.page.layout-chapter_opener .chapter-opener-block {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  width: 100% !important;
+  max-width: 580px !important;
+  margin: auto !important;
+  padding: 0 !important;
 }
 
 .layout-chapter_opener .chapter-icon {
-  margin-bottom: var(--spacing-xxl);
+  margin-bottom: var(--spacing-xl);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -950,19 +993,19 @@ pre, code, table, .component-code-block, .component-terminal-window, .component-
 }
 
 .layout-chapter_opener .chapter-num {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--theme-accent);
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
 }
 
 .layout-chapter_opener .chapter-title {
   font-family: var(--font-display);
-  font-size: clamp(34px, 5vw, 44px);
-  font-weight: 600;
-  line-height: 1.15;
+  font-size: clamp(28px, 4.5vw, 42px);
+  font-weight: 700;
+  line-height: 1.18;
   letter-spacing: -0.5px;
   color: var(--theme-text);
   margin: 0;
@@ -2332,18 +2375,22 @@ sub { vertical-align: sub; font-size: 0.75em; line-height: 0; }
 /* 3. Split Contrast Card */
 .chapter-opener-wrapper.layout-split-contrast {
   align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 .opener-card {
   background: var(--theme-card-bg);
   border: 1px solid var(--theme-border-strong);
   border-radius: var(--radius-xl);
-  padding: 48px 40px;
+  padding: clamp(24px, 4.5vw, 44px) clamp(20px, 4vw, 38px);
   width: 100%;
   max-width: 540px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: clamp(14px, 2vw, 22px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  box-sizing: border-box;
 }
 .opener-card-header {
   display: flex;
