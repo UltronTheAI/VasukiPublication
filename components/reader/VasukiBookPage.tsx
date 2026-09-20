@@ -305,16 +305,21 @@ export function VasukiBookPage({
         (currentChapterMeta?.theme as "light" | "dark") ||
         (customBg ? (isHexDark(customBg) ? "dark" : "light") : "light");
 
+  const hasStructuredBlocks = Boolean(page.content?.blocks && page.content.blocks.length > 0);
+  const hasPreRenderedHtml = Boolean(page.html && page.html.trim().length > 0);
+
   const isTitlePage =
     !isCover &&
+    !hasStructuredBlocks &&
     (page.page_type === "title" ||
       page.page_type === "imprint" ||
       page.layout === "title" ||
       page.layout === "imprint" ||
-      (page.page_number === 2 && !page.chapter_number && page.page_type !== "chapter_content"));
+      (page.page_number === 2 && !page.chapter_number && page.page_type !== "chapter_content" && !page.content?.blocks?.length));
 
   const isThankYou =
     !isCover &&
+    !hasStructuredBlocks &&
     (page.page_type === "thank_you" ||
       page.layout === "thank_you" ||
       (page.page_type !== "chapter_content" && Boolean(book.page_count) && page.page_number === book.page_count && !isChapterOpener));
@@ -331,10 +336,26 @@ export function VasukiBookPage({
       ? "thank_you"
       : "editorial_standard");
 
-  const hasStructuredBlocks = Boolean(page.content?.blocks && page.content.blocks.length > 0);
-  const hasPreRenderedHtml = Boolean(page.html && page.html.trim().length > 0);
+  // Check if first block already renders the headline to avoid duplicate headings on TOC/Copyright/Heading pages
+  const firstBlockType = page.content?.blocks?.[0]?.type;
+  const firstBlockTitle =
+    (page.content?.blocks?.[0] as { title?: string; text?: string })?.title ||
+    (page.content?.blocks?.[0] as { title?: string; text?: string })?.text;
 
-  // If no structured blocks exist and raw html is provided, fallback to HtmlRenderer with dynamic style overrides
+  const isHeadlineRedundant =
+    !page.content?.headline ||
+    page.page_type === "toc" ||
+    page.page_type === "copyright" ||
+    page.layout === "toc" ||
+    page.layout === "copyright" ||
+    firstBlockType === "toc" ||
+    firstBlockType === "copyright" ||
+    firstBlockType === "acknowledgement" ||
+    (firstBlockType === "heading" &&
+      firstBlockTitle?.toLowerCase().trim() === page.content.headline?.toLowerCase().trim()) ||
+    firstBlockTitle?.toLowerCase().trim() === page.content.headline?.toLowerCase().trim();
+
+  // If no structured blocks exist and raw html is provided, render HtmlRenderer with dynamic style overrides
   if (!isCover && !hasStructuredBlocks && hasPreRenderedHtml) {
     return (
       <div className={`vasuki-book-root w-full h-full flex items-center justify-center select-text ${className}`}>
@@ -768,7 +789,7 @@ export function VasukiBookPage({
             {/* E. Standard Editorial Page Layout */}
             {!isCover && !isChapterOpener && !isTitlePage && !isThankYou && (
               <>
-                {page.content?.headline && (
+                {!isHeadlineRedundant && page.content?.headline && (
                   <h2 className="content-headline">
                     {page.content.headline}
                   </h2>

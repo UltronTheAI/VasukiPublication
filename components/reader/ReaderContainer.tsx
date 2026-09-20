@@ -243,14 +243,15 @@ export function ReaderContainer({
   const goToPage = useCallback(
     (targetPage: number) => {
       const clamped = Math.min(Math.max(1, targetPage), totalPages);
+      if (clamped === currentPage) return;
       const isOpeningSpread = currentPage === 1 && clamped > 1;
       const dir = isOpeningSpread ? "open" : clamped > currentPage ? "next" : "prev";
 
       setFlipDirection(dir);
       setCurrentPage(clamped);
 
-      // Reset animation state after 3D animation duration
-      setTimeout(() => setFlipDirection(null), 520);
+      // Reset animation state after smooth 3D animation duration
+      setTimeout(() => setFlipDirection(null), 360);
     },
     [currentPage, totalPages]
   );
@@ -615,20 +616,18 @@ export function ReaderContainer({
         <div className="book-3d-stage">
           <div
             className={`book-3d-spread ${
-              flipDirection === "open"
-                ? "is-opening"
-                : flipDirection === "next"
-                ? "is-flip-next"
-                : flipDirection === "prev"
-                ? "is-flip-prev"
-                : ""
-            } ${
-              !rightPageData
-                ? flipDirection === "next"
-                  ? "vasuki-flip-enter vasuki-flip-enter-active"
+              rightPageData
+                ? flipDirection === "open"
+                  ? "is-opening"
+                  : flipDirection === "next"
+                  ? "is-flip-next"
                   : flipDirection === "prev"
-                  ? "vasuki-flip-back-enter vasuki-flip-back-enter-active"
+                  ? "is-flip-prev"
                   : ""
+                : flipDirection === "next"
+                ? "is-single-flip-next"
+                : flipDirection === "prev"
+                ? "is-single-flip-prev"
                 : ""
             }`}
             style={{ transform: `scale(${zoomLevel / 100})` }}

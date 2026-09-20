@@ -1114,23 +1114,39 @@ function RenderChartOrDiagram({ block }: { block: ChartBlock | DiagramBlock }) {
 // -----------------------------------------------------------------------------
 function RenderToc({ block }: { block: TocBlock }) {
   return (
-    <div className="component-toc my-4 p-4 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card-bg)]">
-      <h3 className="toc-header text-base font-bold text-[var(--theme-text)] mb-3 flex items-center gap-2">
-        <VasukiIcon name="ListOrdered" size={18} className="text-emerald-500" />
-        <span>{block.title || "Table of Contents"}</span>
-      </h3>
-      <div className="toc-entries space-y-2">
+    <div className="component-toc-page w-full my-1">
+      <div className="toc-header-section mb-6 pb-2 border-b border-[var(--theme-border)] flex items-center justify-between">
+        <h2 className="text-xl font-bold font-serif tracking-tight text-[var(--theme-text)] flex items-center gap-2">
+          <VasukiIcon name="ListOrdered" size={20} className="text-[var(--theme-accent,#00ed64)]" />
+          <span>{block.title || "Table of Contents"}</span>
+        </h2>
+        {block.subtitle && (
+          <span className="text-xs text-[var(--theme-text-muted)] font-mono uppercase tracking-wider">
+            {block.subtitle}
+          </span>
+        )}
+      </div>
+      <div className="toc-entries-list space-y-3.5">
         {block.entries?.map((entry, idx) => (
-          <div key={idx} className="toc-entry flex items-center justify-between text-xs border-b border-[var(--theme-border)] pb-1.5 last:border-0">
-            <div className="flex items-center gap-2 text-[var(--theme-text)]">
-              {entry.chapter_number && (
-                <span className="toc-chapter-num font-mono text-emerald-600 dark:text-emerald-400 font-semibold w-5">
-                  {entry.chapter_number}.
+          <div key={idx} className="toc-entry-row flex items-baseline justify-between text-xs sm:text-sm group">
+            <div className="flex items-baseline gap-2.5 min-w-0 pr-2">
+              {entry.chapter_number != null && (
+                <span className="toc-chapter-badge font-mono text-xs font-bold text-[var(--theme-accent,#00ed64)] shrink-0 w-6">
+                  {String(entry.chapter_number).padStart(2, "0")}
                 </span>
               )}
-              <span className="toc-title">{entry.title}</span>
+              {entry.icon && (
+                <VasukiIcon name={entry.icon} size={14} className="text-[var(--theme-text-muted)] shrink-0 self-center" />
+              )}
+              <span className="toc-title font-medium text-[var(--theme-text)] truncate">
+                {entry.title}
+              </span>
             </div>
-            <span className="toc-page-num font-mono text-[var(--theme-text-subtle)]">p. {entry.page_number}</span>
+            {/* Dotted Leader Line */}
+            <div className="flex-1 mx-2 border-b border-dotted border-[var(--theme-border-strong,rgba(0,0,0,0.2))] self-baseline relative -top-1 opacity-60" />
+            <span className="toc-page-number font-mono text-xs font-semibold text-[var(--theme-text-secondary)] shrink-0 pl-1">
+              {entry.page_number}
+            </span>
           </div>
         ))}
       </div>
@@ -1142,19 +1158,81 @@ function RenderToc({ block }: { block: TocBlock }) {
 // 17. Copyright / Acknowledgement Block
 // -----------------------------------------------------------------------------
 function RenderCopyright({ block }: { block: CopyrightBlock | AcknowledgementBlock }) {
+  const isCopyright = "book_title" in block || "rights_notice" in block || "rights_holder" in block;
+  const cpBlock = block as CopyrightBlock;
+  const ackBlock = block as AcknowledgementBlock;
+
+  if (isCopyright) {
+    return (
+      <div className="copyright-page-layout w-full h-full flex flex-col justify-end text-xs text-[var(--theme-text-secondary)] space-y-4 py-4">
+        <div className="copyright-header mb-1">
+          <h2 className="text-base font-bold text-[var(--theme-text)] font-serif">
+            {cpBlock.book_title || cpBlock.title || "Copyright & Publishing Notice"}
+          </h2>
+          {cpBlock.book_subtitle && (
+            <p className="text-xs text-[var(--theme-text-muted)] mt-0.5">{cpBlock.book_subtitle}</p>
+          )}
+        </div>
+
+        <div className="space-y-2 text-[11px] leading-relaxed border-t border-[var(--theme-border)] pt-3">
+          {cpBlock.author && (
+            <p><strong>Author:</strong> {cpBlock.author}</p>
+          )}
+          {cpBlock.rights_holder && (
+            <p><strong>Copyright &copy; {cpBlock.year || "2026"} {cpBlock.rights_holder}.</strong> All rights reserved.</p>
+          )}
+          {cpBlock.rights_notice && (
+            <p className="text-[10.5px] text-[var(--theme-text-muted)]">{cpBlock.rights_notice}</p>
+          )}
+          {cpBlock.publisher && (
+            <p><strong>Publisher:</strong> {cpBlock.publisher}</p>
+          )}
+          {cpBlock.edition && (
+            <p><strong>Edition:</strong> {cpBlock.edition}</p>
+          )}
+          {cpBlock.isbn && (
+            <p className="font-mono text-[10.5px]"><strong>ISBN:</strong> {cpBlock.isbn}</p>
+          )}
+          {cpBlock.disclaimer && (
+            <p className="text-[10px] italic text-[var(--theme-text-subtle)] border-t border-[var(--theme-border)] pt-2 mt-2">
+              {cpBlock.disclaimer}
+            </p>
+          )}
+        </div>
+
+        <div className="colophon-engine text-[10px] text-[var(--theme-text-subtle)] border-t border-[var(--theme-border)] pt-2 flex items-center justify-between">
+          <span>Published via <strong>VasukiPublication</strong></span>
+          <span>Engine: <strong>VasukiSquare</strong></span>
+        </div>
+      </div>
+    );
+  }
+
+  // Acknowledgement Block
   return (
-    <div className="copyright-container my-6 p-4 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card-bg)] text-xs text-[var(--theme-text-muted)] space-y-2">
-      <div className="copyright-title font-bold text-sm text-[var(--theme-text)]">{block.title}</div>
-      {"rights_notice" in block && block.rights_notice && <div className="copyright-meta">{block.rights_notice}</div>}
-      {"disclaimer" in block && block.disclaimer && <div className="copyright-disclaimer italic">{block.disclaimer}</div>}
-      {"contributors" in block && block.contributors && (
-        <div>
-          <strong>Contributors:</strong> {block.contributors.join(", ")}
+    <div className="acknowledgement-page-layout w-full my-4 text-xs text-[var(--theme-text-secondary)] space-y-3">
+      <h2 className="text-base font-bold text-[var(--theme-text)] font-serif mb-2">
+        {ackBlock.title || "Acknowledgements"}
+      </h2>
+      {ackBlock.lead && (
+        <p className="text-sm font-medium text-[var(--theme-text)] leading-relaxed italic">{ackBlock.lead}</p>
+      )}
+      {ackBlock.body && (
+        <p className="leading-relaxed">{ackBlock.body}</p>
+      )}
+      {ackBlock.paragraphs?.map((para, i) => (
+        <p key={i} className="leading-relaxed">{para}</p>
+      ))}
+      {ackBlock.contributors && ackBlock.contributors.length > 0 && (
+        <div className="pt-2 border-t border-[var(--theme-border)]">
+          <p className="font-semibold text-[var(--theme-text)] mb-1">Key Contributors:</p>
+          <ul className="list-disc pl-4 space-y-0.5 text-[11.5px]">
+            {ackBlock.contributors.map((c, i) => (
+              <li key={i}>{c}</li>
+            ))}
+          </ul>
         </div>
       )}
-      <div className="text-[10px] text-[var(--theme-text-subtle)] pt-2 border-t border-[var(--theme-border)]">
-        Published via VasukiPublication • Engine: VasukiSquare
-      </div>
     </div>
   );
 }

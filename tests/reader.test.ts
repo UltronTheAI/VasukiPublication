@@ -323,6 +323,58 @@ describe("Reader — Dynamic Page Style Resolution", () => {
     assert.equal(resolved.cardBg, "rgba(255, 255, 255, 0.06)");
     assert.equal(resolved.icon, "Cpu", "Chapter opener should inherit chapter icon from next page");
   });
+
+  it("prevents redundant double headlines for TOC, copyright, and heading blocks", () => {
+    function isHeadlineRedundant(page: {
+      page_type?: string;
+      layout?: string;
+      content?: { headline?: string | null; blocks?: Array<{ type: string; title?: string; text?: string }> };
+    }): boolean {
+      if (!page.content?.headline) return true;
+      const firstBlockType = page.content?.blocks?.[0]?.type;
+      const firstBlockTitle = page.content?.blocks?.[0]?.title || page.content?.blocks?.[0]?.text;
+
+      return (
+        page.page_type === "toc" ||
+        page.page_type === "copyright" ||
+        page.layout === "toc" ||
+        page.layout === "copyright" ||
+        firstBlockType === "toc" ||
+        firstBlockType === "copyright" ||
+        firstBlockType === "acknowledgement" ||
+        (firstBlockType === "heading" &&
+          firstBlockTitle?.toLowerCase().trim() === page.content.headline?.toLowerCase().trim()) ||
+        firstBlockTitle?.toLowerCase().trim() === page.content.headline?.toLowerCase().trim()
+      );
+    }
+
+    assert.equal(
+      isHeadlineRedundant({
+        page_type: "toc",
+        content: { headline: "Table of Contents", blocks: [{ type: "toc", title: "Table of Contents" }] },
+      }),
+      true,
+      "TOC headline must not be rendered twice"
+    );
+
+    assert.equal(
+      isHeadlineRedundant({
+        page_type: "copyright",
+        content: { headline: "Copyright & Publishing Notice", blocks: [{ type: "copyright", title: "Copyright & Publishing Notice" }] },
+      }),
+      true,
+      "Copyright headline must not be rendered twice"
+    );
+
+    assert.equal(
+      isHeadlineRedundant({
+        page_type: "chapter_content",
+        content: { headline: "Unique Section Title", blocks: [{ type: "text", text: "Paragraph text" }] },
+      }),
+      false,
+      "Unique editorial headline should be rendered"
+    );
+  });
 });
 
 describe("Reader — Icon Mapping Compatibility", () => {
