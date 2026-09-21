@@ -207,6 +207,16 @@
   justify-content: space-between !important;
 }
 
+.vasuki-book-root .page.page-loading-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  padding: 32px !important;
+  background-color: #ffffff !important;
+}
+
 /* ==========================================================================
    Clean Book Spread & Reading Container Layout (Strict Matching Dimensions)
    ========================================================================== */

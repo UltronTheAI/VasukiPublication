@@ -17,6 +17,7 @@ import {
   Bookmark,
   BookmarkCheck,
   X,
+  RefreshCw,
 } from "lucide-react";
 import { VasukiBookPage } from "@/components/reader/VasukiBookPage";
 import { useSavedBooks } from "@/lib/hooks/useSavedBooks";
@@ -156,12 +157,20 @@ export function ReaderContainer({
   // ---------------------------------------------------------------------------
   // Active 10-Page Batch Loader & 8th-Page Prefetch Trigger with 2-day cache
   // ---------------------------------------------------------------------------
-  useEffect(() => {
-    let cancelled = false;
+  const [fetchTrigger, setFetchTrigger] = useState<number>(0);
 
-    async function fetchBatch(startPage: number, limit: number = 10) {
-      if (startPage > totalPages || inFlightFetches.current.has(startPage) || cancelled) {
-        return;
+  const retryFetch = useCallback(() => {
+    inFlightFetches.current.clear();
+    setFetchTrigger((prev) => prev + 1);
+  }, []);
+
+  useEffect(() => {
+    async function fetchBatch(startPage: number, limit: number = 10): Promise<boolean> {
+      if (startPage > totalPages) {
+        return false;
+      }
+      if (inFlightFetches.current.has(startPage)) {
+        return false;
       }
 
       // Check if all pages in this batch are already present in cache
@@ -173,7 +182,7 @@ export function ReaderContainer({
           break;
         }
       }
-      if (allCached) return;
+      if (allCached) return true;
 
       inFlightFetches.current.add(startPage);
 
@@ -181,7 +190,10 @@ export function ReaderContainer({
         const res = await fetch(
           `/api/books/${encodeURIComponent(book.slug)}/pages?page=${startPage}&limit=${limit}`
         );
-        if (!res.ok || cancelled) return;
+        if (!res.ok) {
+          inFlightFetches.current.delete(startPage);
+          return false;
+        }
 
         const data = await res.json();
         if (data.pages && Array.isArray(data.pages)) {
@@ -195,25 +207,29 @@ export function ReaderContainer({
             savePagesToBrowserCache(book.slug, next);
             return next;
           });
+          return true;
         }
+        return false;
       } catch {
-        // prefetch errors silently handled
+        return false;
       } finally {
         inFlightFetches.current.delete(startPage);
       }
     }
 
     async function loadPagesAndPrefetch() {
-      // 1. Ensure current visible page batch (10 pages) is loaded
+      // 1. Ensure current visible page batch (10 pages) is loaded in parallel
       const leftBatch = getBatchWindowForPage(effectiveLeftPageNum, 10);
-      await fetchBatch(leftBatch.start, 10);
+      const fetchTasks: Promise<boolean>[] = [fetchBatch(leftBatch.start, 10)];
 
       if (effectiveRightPageNum) {
         const rightBatch = getBatchWindowForPage(effectiveRightPageNum, 10);
         if (rightBatch.start !== leftBatch.start) {
-          await fetchBatch(rightBatch.start, 10);
+          fetchTasks.push(fetchBatch(rightBatch.start, 10));
         }
       }
+
+      await Promise.all(fetchTasks);
 
       // 2. Prefetch next 10 pages when user reaches 8th page of batch (e.g. 8, 18, 28, 38...)
       if (shouldPrefetchNextBatch(currentPage, 10, 8)) {
@@ -232,11 +248,25 @@ export function ReaderContainer({
     }
 
     loadPagesAndPrefetch();
+  }, [effectiveLeftPageNum, effectiveRightPageNum, currentPage, totalPages, book.slug, fetchTrigger]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [effectiveLeftPageNum, effectiveRightPageNum, currentPage, totalPages, book.slug]);
+  // ---------------------------------------------------------------------------
+  // Continuous Auto-Retry Mechanism for Visible Pages
+  // If visible left or right page is not yet loaded, retry every 2.5 seconds
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const isLeftMissing = !pageCache[effectiveLeftPageNum];
+    const isRightMissing = Boolean(effectiveRightPageNum && !pageCache[effectiveRightPageNum]);
+
+    if (!isLeftMissing && !isRightMissing) return;
+
+    const timer = setInterval(() => {
+      inFlightFetches.current.clear();
+      setFetchTrigger((t) => t + 1);
+    }, 2500);
+
+    return () => clearInterval(timer);
+  }, [pageCache, effectiveLeftPageNum, effectiveRightPageNum]);
 
   // ---------------------------------------------------------------------------
   // Navigation Handlers
@@ -630,9 +660,22 @@ export function ReaderContainer({
                 />
               ) : (
                 <div className="vasuki-book-root w-full h-full flex items-center justify-center">
-                  <div className="page bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm w-full h-full aspect-[210/297]">
-                    <div className="w-9 h-9 rounded-full border-3 border-emerald-500 border-t-transparent animate-spin mb-3" />
-                    <p className="text-xs font-mono font-semibold text-slate-600">Loading Page {effectiveLeftPageNum}...</p>
+                  <div className="page page-loading-card bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm w-full h-full aspect-[210/297]">
+                    <div className="flex flex-col items-center justify-center gap-3 my-auto select-none">
+                      <div className="w-10 h-10 rounded-full border-3 border-emerald-500 border-t-transparent animate-spin" />
+                      <div className="space-y-1">
+                        <p className="text-xs font-mono font-bold text-slate-700">Loading Page {effectiveLeftPageNum}...</p>
+                        <p className="text-[11px] text-slate-400 font-medium">Fetching chapter content...</p>
+                      </div>
+                      <button
+                        onClick={() => retryFetch()}
+                        title="Retry loading page"
+                        className="mt-1 flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 text-[11px] font-medium transition-colors cursor-pointer"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>Retry</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -654,9 +697,22 @@ export function ReaderContainer({
                   />
                 ) : (
                   <div className="vasuki-book-root w-full h-full flex items-center justify-center">
-                    <div className="page bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm w-full h-full aspect-[210/297]">
-                      <div className="w-9 h-9 rounded-full border-3 border-emerald-500 border-t-transparent animate-spin mb-3" />
-                      <p className="text-xs font-mono font-semibold text-slate-600">Loading Page {effectiveRightPageNum}...</p>
+                    <div className="page page-loading-card bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm w-full h-full aspect-[210/297]">
+                      <div className="flex flex-col items-center justify-center gap-3 my-auto select-none">
+                        <div className="w-10 h-10 rounded-full border-3 border-emerald-500 border-t-transparent animate-spin" />
+                        <div className="space-y-1">
+                          <p className="text-xs font-mono font-bold text-slate-700">Loading Page {effectiveRightPageNum}...</p>
+                          <p className="text-[11px] text-slate-400 font-medium">Fetching chapter content...</p>
+                        </div>
+                        <button
+                          onClick={() => retryFetch()}
+                          title="Retry loading page"
+                          className="mt-1 flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 text-[11px] font-medium transition-colors cursor-pointer"
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                          <span>Retry</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
