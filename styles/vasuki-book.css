@@ -208,7 +208,7 @@
 }
 
 /* ==========================================================================
-   Clean Book Spread & Reading Container Layout
+   Clean Book Spread & Reading Container Layout (Strict Matching Dimensions)
    ========================================================================== */
 
 .book-stage {
@@ -222,10 +222,12 @@
 
 .book-spread {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   position: relative;
   border-radius: 6px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .book-spine-crease {
@@ -248,15 +250,27 @@
   box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.22);
 }
 
+.book-page-slot-left,
+.book-page-slot-right {
+  height: 100% !important;
+  aspect-ratio: 210 / 297 !important;
+  max-height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+
 .book-page-slot-left {
-  position: relative;
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
   box-shadow: inset -16px 0 20px -8px rgba(0, 0, 0, 0.14), 0 10px 25px -6px rgba(0, 0, 0, 0.22);
 }
 
 .book-page-slot-right {
-  position: relative;
   border-top-left-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
   box-shadow: inset 16px 0 20px -8px rgba(0, 0, 0, 0.14), 0 10px 25px -6px rgba(0, 0, 0, 0.22);

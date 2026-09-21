@@ -605,15 +605,19 @@ export function ReaderContainer({
         </button>
 
         {/* Book Canvas Viewport */}
-        <div className="book-stage w-full h-full flex items-center justify-center relative">
+        <div className="book-stage w-full h-full flex items-center justify-center relative overflow-hidden">
           <div
-            className="book-spread flex items-center justify-center relative"
+            className={`book-spread flex items-stretch justify-center relative h-full max-h-[calc(100dvh-7.5rem)] sm:max-h-[calc(100dvh-5.5rem)] ${
+              isSpreadActive
+                ? "aspect-[420/297] max-w-full"
+                : "aspect-[210/297] max-w-[calc(100vw-1.25rem)] sm:max-w-full"
+            }`}
             style={{ transform: `scale(${zoomLevel / 100})` }}
           >
             {/* Left Page Slot */}
             <div
-              className={`h-full w-auto max-w-[calc(100vw-1.25rem)] sm:max-w-full max-h-[calc(100dvh-7.5rem)] sm:max-h-[calc(100dvh-5.5rem)] aspect-[210/297] flex items-center justify-center min-w-0 min-h-0 shrink ${
-                rightPageData ? "book-page-slot-left" : "drop-shadow-md"
+              className={`h-full flex-1 aspect-[210/297] flex items-center justify-center min-w-0 min-h-0 relative ${
+                isSpreadActive ? "book-page-slot-left" : "drop-shadow-md"
               }`}
             >
               {leftPageData ? (
@@ -624,27 +628,36 @@ export function ReaderContainer({
                 />
               ) : (
                 <div className="vasuki-book-root w-full h-full flex items-center justify-center">
-                  <div className="vasuki-page-canvas bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm w-full h-full aspect-[210/297]">
-                    <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mb-3" />
-                    <p className="text-xs font-mono">Loading Page {effectiveLeftPageNum}...</p>
+                  <div className="page bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm w-full h-full aspect-[210/297]">
+                    <div className="w-9 h-9 rounded-full border-3 border-emerald-500 border-t-transparent animate-spin mb-3" />
+                    <p className="text-xs font-mono font-semibold text-slate-600">Loading Page {effectiveLeftPageNum}...</p>
                   </div>
                 </div>
               )}
             </div>
 
             {/* Book Spine Crease & Shadow in 2-Page Spread */}
-            {rightPageData && (
+            {isSpreadActive && (
               <div className="hidden xl:block book-spine-crease" aria-hidden="true" />
             )}
 
             {/* Right Page Slot (Spread mode only on large screens when not on Cover or standalone last page) */}
-            {rightPageData && (
-              <div className="hidden xl:flex h-full w-auto max-w-full max-h-[calc(100dvh-5.5rem)] aspect-[210/297] items-center justify-center min-w-0 min-h-0 shrink book-page-slot-right">
-                <VasukiBookPage
-                  page={rightPageData}
-                  book={book}
-                  nextPage={effectiveRightPageNum ? pageCache[effectiveRightPageNum + 1] || null : null}
-                />
+            {isSpreadActive && (
+              <div className="hidden xl:flex h-full flex-1 aspect-[210/297] items-center justify-center min-w-0 min-h-0 relative book-page-slot-right">
+                {rightPageData ? (
+                  <VasukiBookPage
+                    page={rightPageData}
+                    book={book}
+                    nextPage={effectiveRightPageNum ? pageCache[effectiveRightPageNum + 1] || null : null}
+                  />
+                ) : (
+                  <div className="vasuki-book-root w-full h-full flex items-center justify-center">
+                    <div className="page bg-white border border-slate-200 rounded-sm flex flex-col items-center justify-center p-8 text-center text-slate-500 shadow-sm w-full h-full aspect-[210/297]">
+                      <div className="w-9 h-9 rounded-full border-3 border-emerald-500 border-t-transparent animate-spin mb-3" />
+                      <p className="text-xs font-mono font-semibold text-slate-600">Loading Page {effectiveRightPageNum}...</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
