@@ -5,6 +5,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPublicBookBySlug } from "@/lib/repositories/books";
 import { getCoverForBook } from "@/lib/repositories/covers";
+import { getBookChapterRanges } from "@/lib/repositories/pages";
 import { CoverPreview } from "@/components/cover/CoverPreview";
 import { SaveBookButton } from "@/components/book/SaveBookButton";
 import { resolveVasukiIconName } from "@/lib/vasuki/icon-map";
@@ -142,8 +143,29 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
     notFound();
   }
 
-  // Fetch cover metadata (lightweight, no page documents loaded)
-  const cover = await getCoverForBook(book.id || book._id || "");
+  const bookId = book.id || book._id || "";
+
+  // Fetch cover metadata and exact database chapter ranges in parallel (lightweight, no page documents loaded)
+  const [cover, chapterRanges] = await Promise.all([
+    getCoverForBook(bookId),
+    getBookChapterRanges(bookId),
+  ]);
+
+  let fallbackCursor = 1;
+  const chaptersWithStartPage = (book.chapters || []).map((ch) => {
+    const dbRange = chapterRanges?.[ch.chapter_number];
+    let startPage: number;
+    if (dbRange && typeof dbRange.start_page === "number") {
+      startPage = dbRange.start_page;
+    } else {
+      startPage = fallbackCursor;
+      fallbackCursor += Math.max(1, ch.page_count || 1);
+    }
+    return {
+      ...ch,
+      startPage,
+    };
+  });
 
   const category = book.category || book.discovery?.category || "Technical Publication";
   const pageCount = book.page_count || 0;
@@ -375,7 +397,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
                 </div>
 
                 <Link
-                  href={`/book/${book.slug}/read`}
+                  href={`/book/${book.slug}/read?page=${chaptersWithStartPage[0]?.startPage || 1}`}
                   className="text-xs font-semibold text-link hover:underline flex items-center gap-1"
                 >
                   <span>Start with Chapter 1</span>
@@ -383,15 +405,17 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
                 </Link>
               </div>
 
-              {book.chapters && book.chapters.length > 0 ? (
+              {chaptersWithStartPage.length > 0 ? (
                 <div className="space-y-3 max-h-[460px] overflow-y-auto pr-2 custom-scrollbar">
-                  {book.chapters.map((ch) => (
-                    <div
+                  {chaptersWithStartPage.map((ch) => (
+                    <Link
                       key={ch.chapter_number}
-                      className="group bg-canvas-soft hover:bg-white border border-hairline hover:border-hairline-strong rounded-xl p-4 sm:p-5 transition-all shadow-2xs hover:shadow-xs flex items-start justify-between gap-4"
+                      href={`/book/${book.slug}/read?page=${ch.startPage}`}
+                      title={`Read Chapter ${ch.chapter_number}: ${ch.title}`}
+                      className="group bg-canvas-soft hover:bg-white border border-hairline hover:border-hairline-strong hover:border-emerald-500/30 rounded-xl p-4 sm:p-5 transition-all shadow-2xs hover:shadow-xs flex items-start justify-between gap-4 cursor-pointer block"
                     >
                       <div className="flex items-start gap-3.5">
-                        <div className="w-8 h-8 rounded-lg bg-white border border-hairline flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                        <div className="w-8 h-8 rounded-lg bg-white border border-hairline flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 group-hover:border-emerald-500/40 group-hover:bg-emerald-50/30 transition-all">
                           <ChapterIcon iconName={ch.icon} />
                         </div>
                         <div>
@@ -409,7 +433,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
                               {ch.theme} theme
                             </span>
                           </div>
-                          <h3 className="text-sm font-semibold text-ink leading-snug">
+                          <h3 className="text-sm font-semibold text-ink leading-snug group-hover:text-emerald-700 transition-colors">
                             {ch.title}
                           </h3>
                           {ch.summary && (
@@ -420,12 +444,15 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
                         </div>
                       </div>
 
-                      {ch.page_count > 0 && (
-                        <div className="text-[11px] font-mono text-mute shrink-0 self-center bg-white px-2 py-1 rounded border border-hairline">
-                          {ch.page_count}p
-                        </div>
-                      )}
-                    </div>
+                      <div className="flex items-center gap-2 shrink-0 self-center">
+                        {ch.page_count > 0 && (
+                          <div className="text-[11px] font-mono text-mute bg-white px-2 py-1 rounded border border-hairline group-hover:border-emerald-200">
+                            {ch.page_count}p
+                          </div>
+                        )}
+                        <ArrowRight className="w-4 h-4 text-mute/40 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </Link>
                   ))}
                 </div>
               ) : (
