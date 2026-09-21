@@ -661,18 +661,7 @@ export function VasukiBookPage({
                 </div>
 
                 {/* Title Box */}
-                <div
-                  className="cover-title-wrapper"
-                  style={{
-                    position: "relative",
-                    zIndex: 2,
-                    margin: "auto 0",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    width: "100%",
-                  }}
-                >
+                <div className="cover-title-wrapper">
                   <div className="cover-title-container">
                     <h1 className="cover-title">
                       {book.title}
