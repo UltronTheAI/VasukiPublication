@@ -5,7 +5,7 @@ import { publicEnv } from "@/lib/env";
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = (publicEnv.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/+$/, "");
+  const baseUrl = (publicEnv.NEXT_PUBLIC_SITE_URL || "https://www.vasukisquare.cc").replace(/\/+$/, "");
   const now = new Date();
 
   // Core static public pages

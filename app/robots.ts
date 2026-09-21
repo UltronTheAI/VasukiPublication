@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { publicEnv } from "@/lib/env";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = (publicEnv.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/+$/, "");
+  const baseUrl = (publicEnv.NEXT_PUBLIC_SITE_URL || "https://www.vasukisquare.cc").replace(/\/+$/, "");
 
   return {
     rules: [
