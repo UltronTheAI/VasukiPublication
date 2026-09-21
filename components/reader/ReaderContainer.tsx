@@ -136,20 +136,22 @@ export function ReaderContainer({
   // - Inside pages show as facing pair on large desktop (Even on left, Odd on right)
   // ---------------------------------------------------------------------------
   const isCoverPage = currentPage === 1;
-  const isEffectiveSpread = spreadMode && typeof window !== "undefined" && window.innerWidth >= 1280;
+  const wantsSpread = spreadMode && !isCoverPage;
 
   const effectiveLeftPageNum = isCoverPage
     ? 1
-    : isEffectiveSpread
+    : wantsSpread
     ? currentPage % 2 === 0
       ? currentPage
       : currentPage - 1
     : currentPage;
 
   const effectiveRightPageNum =
-    isEffectiveSpread && !isCoverPage && effectiveLeftPageNum + 1 <= totalPages
+    wantsSpread && effectiveLeftPageNum + 1 <= totalPages
       ? effectiveLeftPageNum + 1
       : null;
+
+  const isSpreadActive = Boolean(wantsSpread && effectiveRightPageNum !== null);
 
   // ---------------------------------------------------------------------------
   // Active 10-Page Batch Loader & 8th-Page Prefetch Trigger with 2-day cache
